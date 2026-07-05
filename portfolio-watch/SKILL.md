@@ -91,11 +91,13 @@ The list of monitored tickers is **not hardcoded** — it's a config the user ow
 thesis?}]`). The feeds **read it at runtime**, so changing what's watched never
 needs a code change:
 
-- **Add / remove anytime by talking to the Agent** — "also watch COIN", "stop
-  watching TSLA", "make MSTR a leveraged-BTC thesis". The Agent edits the config;
-  the profile + watch feeds pick it up on their next run (re-profile new names,
-  drop removed ones). Verified live: NVDA/TSLA/AAPL/MSTR → +COIN (5, COIN's thesis
-  auto-applied) → −TSLA (4), by editing the config alone.
+- **Add / remove anytime — two ways, same config.** (a) Talk to the Agent ("also
+  watch COIN", "stop watching TSLA"); it edits the config. (b) Do it **in the
+  Playbook UI**: a registered **UDF (`updateWatchlist`)** lets the search box add a
+  ticker and a chip's ✕ remove one, writing directly to the config (no charge;
+  unauthenticated viewers see a sign-in prompt). Either way the profile + watch
+  feeds pick it up next run. Verified live: NVDA/TSLA/AAPL/MSTR → +COIN (5, thesis
+  auto-applied) → −TSLA (4), by config edit and by UDF.
 - **New names get the full treatment automatically** — a freshly added ticker is
   profiled (its own σ/β/σ_ε baseline), and if it's new-listed it enters the
   cold-start path (§Cold Start). This is the reusability requirement made

@@ -1,0 +1,5 @@
+{ "type": "object", "properties": {
+    "action": { "type": "string", "enum": ["add", "remove"] },
+    "symbol": { "type": "string" },
+    "name": { "type": "string" } },
+  "required": ["action", "symbol"] }

@@ -96,15 +96,16 @@
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
 
-        <div class="sec-title">Search &amp; watch any ticker</div>
+        <div class="sec-title">Monitored set · add or remove any ticker</div>
         <div class="card">
+          <div id="monChips" style="margin-bottom:10px"></div>
           <div class="search-wrap">
-            <input class="search-in" id="search" placeholder="🔍  Search ticker (e.g. AMD, GOOGL, COIN)…" autocomplete="off" />
-            <div class="hint" style="margin-top:8px"><b>Sample tickers</b> · click to add, or type any symbol in the computed universe:</div>
+            <input class="search-in" id="search" placeholder="🔍  Search a ticker to add to monitoring (e.g. AMD, GOOGL, COIN)…" autocomplete="off" />
+            <div class="hint" style="margin-top:8px"><b>Sample tickers</b> · click to add:</div>
             <div class="search-res" id="searchRes"></div>
           </div>
-          <div id="watchlist" style="margin-top:12px"></div>
-          <div class="hint" style="margin-top:8px">Each added ticker gets <b>its own thresholds</b> (σ), independent of the portfolio defaults — its σ-analysis is computed server-side from Alva data, saved in this browser. To <b>actually add/remove a monitored holding</b> (so it gets alerts), just tell your Alva Agent — "also watch COIN" / "stop watching TSLA" — it edits your watchlist config and the feed picks it up next run.</div>
+          <div class="hint" id="udfNote" style="margin-top:8px"></div>
+          <div class="hint">Add/remove writes directly to your <b>monitored config</b> — the searched ticker joins your watch set (profiled &amp; alerted on the next run). Changes are saved to your Alva account via a playbook function; sign in to edit.</div>
         </div>
 
         <div class="sec-title">Tune portfolio thresholds · what-if</div>
@@ -159,7 +160,7 @@
       var USER = "george351419";
       var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
       var TH = { surface: 2.0, push: 2.5, force: 3.5 };
-      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, added: [] };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [] };
 
       function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
       function client() { return new AlvaToolkit.AlvaClient(cfg()); }
@@ -241,40 +242,37 @@
         document.getElementById("lens").innerHTML = '<div class="hld-meta" style="font-size:12px;color:var(--text-n7)"><span>Concentration — largest position ' + esc(top ? top.symbol : "") + " at " + Math.round((top ? top.weight : 0) * 100) + "%</span><span>β-weighted exposure " + o.beta_weighted + "× market</span><span>Book moved " + pct(o.port_return_pct) + " vs market-expected " + (o.port_expected_pct == null ? "—" : pct(o.port_expected_pct)) + "</span></div>";
       }
 
-      // ---------- search + watchlist (per-ticker thresholds) ----------
-      function saveWL() { try { localStorage.setItem("pw_watchlist", JSON.stringify(STATE.added)); } catch (e) {} }
-      function loadWL() { try { var s = localStorage.getItem("pw_watchlist"); if (s) STATE.added = JSON.parse(s); } catch (e) {} }
-      function addTicker(sym) {
-        if (!STATE.universe[sym]) return;
-        if (STATE.added.some(function (a) { return a.sym === sym; })) return;
-        STATE.added.push({ sym: sym, th: { surface: TH.surface, push: TH.push, force: TH.force } });
-        saveWL(); renderWatchlist(); document.getElementById("search").value = ""; renderSearch("");
+      // ---------- monitored set (UDF-backed add/remove) ----------
+      function udfReady() { try { return !!(window.alva && window.alva.udf && window.alva.udf.getViewerToken && window.alva.udf.getViewerToken()); } catch (e) { return false; } }
+      function setNote(msg, err) { var n = document.getElementById("udfNote"); if (n) { n.innerHTML = msg; n.style.color = err ? "var(--main-m4)" : "var(--main-m3)"; } }
+      async function udfCall(action, sym) {
+        if (!udfReady()) { setNote("Sign in to Alva to edit your monitored set.", true); return; }
+        setNote((action === "add" ? "Adding " : "Removing ") + sym + "…");
+        try {
+          var r = await window.alva.udf.call("updateWatchlist", { action: action, symbol: sym });
+          var res = (r && r.result) || r;
+          if (res && res.monitored) { STATE.monitored = res.monitored; renderMonChips(); renderSearch(""); }
+          setNote((action === "add" ? "Added " : "Removed ") + sym + " · monitored set: " + STATE.monitored.join(", ") + " — profiled &amp; alerted on the next run.");
+        } catch (e) { setNote("Could not update: " + esc(e && e.message ? e.message : String(e)), true); }
       }
-      function removeTicker(sym) { STATE.added = STATE.added.filter(function (a) { return a.sym !== sym; }); saveWL(); renderWatchlist(); }
+      function renderMonChips() {
+        var el = document.getElementById("monChips");
+        var can = udfReady();
+        el.innerHTML = '<span class="hint" style="margin-right:6px">Monitored:</span>' + STATE.monitored.map(function (s) {
+          return '<span class="res-chip">' + esc(s) + (can ? ' <span class="wl-x" data-rm="' + esc(s) + '" title="stop watching">✕</span>' : "") + "</span>";
+        }).join(" ");
+        el.querySelectorAll("[data-rm]").forEach(function (n) { n.addEventListener("click", function () { udfCall("remove", n.getAttribute("data-rm")); }); });
+      }
       var SAMPLES = ["AMD", "GOOGL", "META", "MSFT", "COIN", "PLTR"];
       function renderSearch(q) {
         q = (q || "").toUpperCase().trim();
         var el = document.getElementById("searchRes");
-        var pool = Object.keys(STATE.universe).filter(function (s) { return !STATE.added.some(function (a) { return a.sym === s; }); });
+        var pool = Object.keys(STATE.universe).filter(function (s) { return STATE.monitored.indexOf(s) < 0; });
         var syms;
         if (!q) { syms = SAMPLES.filter(function (s) { return pool.indexOf(s) >= 0; }); pool.forEach(function (s) { if (syms.indexOf(s) < 0 && syms.length < 8) syms.push(s); }); }
         else { syms = pool.filter(function (s) { return s.indexOf(q) === 0; }).sort().slice(0, 12); }
-        el.innerHTML = syms.length ? syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("") : '<span class="hint">no match in the computed universe — arbitrary tickers on demand are the UDF next step (see repo)</span>';
-        el.querySelectorAll("[data-add]").forEach(function (n) { n.addEventListener("click", function () { addTicker(n.getAttribute("data-add")); }); });
-      }
-      function renderWatchlist() {
-        var el = document.getElementById("watchlist");
-        if (!STATE.added.length) { el.innerHTML = '<div class="hint">No extra tickers yet — search above to add.</div>'; return; }
-        el.innerHTML = STATE.added.map(function (a) {
-          var u = STATE.universe[a.sym] || {}; var absZ = Math.abs(Number(u.residual_z)); var tier = tierOf(absZ, a.th);
-          var badge = tier ? '<span class="badge t-' + tier + '">' + tier + "</span>" : '<span class="muted" style="font-size:11px">quiet</span>';
-          return '<div class="wl-row"><span class="wl-sym">' + esc(a.sym) + '</span><span class="wl-mv ' + cls(u.ret_pct) + '">' + pct(u.ret_pct) + " · " + Number(u.residual_z).toFixed(1) + "σ idio " + badge + '</span><span class="wl-th"><span>surf</span><input data-sym="' + a.sym + '" data-k="surface" value="' + a.th.surface + '" /><span>push</span><input data-sym="' + a.sym + '" data-k="push" value="' + a.th.push + '" /><span>P0</span><input data-sym="' + a.sym + '" data-k="force" value="' + a.th.force + '" /><span class="wl-x" data-rm="' + a.sym + '">✕</span></span></div>';
-        }).join("");
-        el.querySelectorAll("input[data-sym]").forEach(function (n) { n.addEventListener("change", function () {
-          var a = STATE.added.filter(function (x) { return x.sym === n.getAttribute("data-sym"); })[0]; if (!a) return;
-          var v = parseFloat(n.value); if (!isNaN(v)) { a.th[n.getAttribute("data-k")] = v; saveWL(); renderWatchlist(); }
-        }); });
-        el.querySelectorAll("[data-rm]").forEach(function (n) { n.addEventListener("click", function () { removeTicker(n.getAttribute("data-rm")); }); });
+        el.innerHTML = syms.length ? syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("") : '<span class="hint">no match in the computed universe — the feed pre-computes ~24 liquid names; any other ticker is added too, and profiled on the next run</span>';
+        el.querySelectorAll("[data-add]").forEach(function (n) { n.addEventListener("click", function () { udfCall("add", n.getAttribute("data-add")); }); });
       }
 
       function renderFormulas() {
@@ -307,13 +305,15 @@
 
       (async function () {
         try {
-          initTabs(); loadWL();
+          initTabs();
           STATE.overview = flat(await readJson(FEED + "portfolio/overview/@last/1"))[0];
           STATE.holdings = flat(await readJson(FEED + "holdings/rows/@last/12"));
+          STATE.monitored = STATE.holdings.map(function (h) { return h.symbol; });
           flat(await readJson(FEED + "signals/items/@last/12")).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
           flat(await readJson(FEED + "universe/rows/@last/40")).forEach(function (u) { STATE.universe[u.symbol] = u; });
           renderOverview(STATE.overview); syncLabels(); wireControls();
-          renderSignals(); renderLens(); renderFormulas(); renderSearch(""); renderWatchlist();
+          renderSignals(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
+          if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
           setTimeout(deepLinkScroll, 150);
         } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }
       })();
