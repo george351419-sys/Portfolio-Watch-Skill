@@ -98,6 +98,18 @@ inverts it — a residual against the thesis benchmark *is* the violation. Verif
 on real data: **2024-11-21, BTC +4.3% but MSTR −16.2% — a −4.6σ break of the
 leverage thesis → P0.** (`thesis-monitor.js`)
 
+> **In plain words.** When you buy a stock you have a *reason* — *"I hold MSTR
+> because it's a turbo-charged Bitcoin: when BTC goes up, this goes up more."* The
+> Skill remembers that reason and quietly checks whether it's still true. From the
+> past 60 days it learns that MSTR normally moves ~1.5× Bitcoin, and how much
+> day-to-day wobble is normal. Each day it compares *what should have happened* to
+> *what did*: on 2024-11-21 Bitcoin rose +4.3%, so MSTR "should" have risen ~+6% —
+> but it crashed −16%, a gap **4.8× bigger than its normal wobble**. That's not
+> noise, it's your *reason* breaking, so it sounds the top-level alarm. The neat
+> part: it reuses the same "ruler" the system already uses to spot unusual
+> single-stock moves — just pointed at Bitcoin instead of the market. Same
+> thermometer, different spot, completely different meaning.
+
 ## I built it to prove it's real
 
 ![Residual-vol fix reclassifies AAPL P1 to P0](assets/fig2-residual-vol-fix.png)
@@ -167,6 +179,8 @@ reference implementation).*
 ## 盯的是假设，不只是市场（PM 亮点）
 
 最高价值的问题不是"市场在干嘛"，而是"**我当初买它的理由还成立吗**"。用户说"我把 MSTR 当 BTC 杠杆拿"，Skill 就捕获这个 thesis 并监控它的**不变量**（MSTR 应放大跟随 BTC）。当 BTC 大涨而 MSTR 没涨——这不是市场噪音，是**假设破裂**，直接**越级 P0**，因为它挑战的是用户的**决策**，不只是报告一次移动。优雅之处：它复用了同一套残差波动率引擎，只是把基准换成 thesis 指定的参照资产——基础模型里残差是*信号*、市场是*噪音*；thesis 把它翻转——对 thesis 基准的残差**就是**违背。真实数据验证：**2024-11-21，BTC +4.3% 但 MSTR −16.2%，对杠杆假设的 −4.6σ 破裂 → P0。**（`thesis-monitor.js`）
+
+> **用大白话说。** 你买一只股票时，心里有个*理由*——"我买 MSTR，是因为它像**比特币的放大版**：比特币涨，它涨得更猛。"Skill 会**记住这个理由**，并悄悄检查它还成不成立。它从过去 60 天学到两件事：MSTR 平时大概是比特币的 **1.5 倍猛**，以及每天多大的误差算**正常**。然后每天对账"该发生的"和"实际发生的"：2024-11-21 比特币涨了 +4.3%，MSTR **本该涨约 +6%**，却**暴跌 −16%**——这个差距是平时正常波动的 **4.8 倍**。这不是噪音，是你**买它的理由断了**，所以拉最高级警报。最妙的是：这用的是系统本来就有的那把"尺子"（平时用来量个股相对大盘的异常），只是把参照物**从大盘换成了比特币**。同一个体温计，换个地方量，意义完全不同。
 
 ## 我做出来证明它是真的
 
