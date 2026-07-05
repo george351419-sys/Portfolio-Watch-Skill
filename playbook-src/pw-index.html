@@ -105,7 +105,7 @@
             <div class="search-res" id="searchRes"></div>
           </div>
           <div class="hint" id="udfNote" style="margin-top:8px"></div>
-          <div class="hint">Add/remove writes directly to your <b>monitored config</b> — the searched ticker joins your watch set (profiled &amp; alerted on the next run). Changes are saved to your Alva account via a playbook function; sign in to edit.</div>
+          <div class="hint">Add/remove writes directly to your <b>monitored config</b>, and the added ticker's σ-analysis is <b>computed on the spot</b> (shown immediately in Signals &amp; Holdings); full profiling &amp; alerts follow on the next run. Saved to your Alva account via a playbook function; sign in to edit.</div>
         </div>
 
         <div class="sec-title">Tune portfolio thresholds · what-if</div>
@@ -245,14 +245,31 @@
       // ---------- monitored set (UDF-backed add/remove) ----------
       function udfReady() { try { return !!(window.alva && window.alva.udf && window.alva.udf.getViewerToken && window.alva.udf.getViewerToken()); } catch (e) { return false; } }
       function setNote(msg, err) { var n = document.getElementById("udfNote"); if (n) { n.innerHTML = msg; n.style.color = err ? "var(--main-m4)" : "var(--main-m3)"; } }
+      function curAsof() { var d = (STATE.overview && STATE.overview.as_of) || ""; var t = Date.parse(d + "T13:00:00Z"); return isNaN(t) ? undefined : Math.floor(t / 1000); }
+      function renormWeights() { var n = STATE.holdings.length; if (n) STATE.holdings.forEach(function (h) { h.weight = Math.round((1 / n) * 1000) / 1000; }); }
       async function udfCall(action, sym) {
         if (!udfReady()) { setNote("Sign in to Alva to edit your monitored set.", true); return; }
-        setNote((action === "add" ? "Adding " : "Removing ") + sym + "…");
+        setNote((action === "add" ? "Adding " : "Removing ") + sym + " — computing analysis…");
         try {
-          var r = await window.alva.udf.call("updateWatchlist", { action: action, symbol: sym });
+          var r = await window.alva.udf.call("updateWatchlist", { action: action, symbol: sym, asof: curAsof() });
           var res = (r && r.result) || r;
-          if (res && res.monitored) { STATE.monitored = res.monitored; renderMonChips(); renderSearch(""); }
-          setNote((action === "add" ? "Added " : "Removed ") + sym + " · monitored set: " + STATE.monitored.join(", ") + " — profiled &amp; alerted on the next run.");
+          if (res && res.monitored) STATE.monitored = res.monitored;
+          if (action === "add" && res && res.evidence) {
+            var ev = res.evidence; STATE.universe[ev.symbol] = ev;
+            if (!STATE.holdings.some(function (h) { return h.symbol === ev.symbol; })) {
+              STATE.holdings.push({ symbol: ev.symbol, name: ev.symbol, price: ev.price, ret_pct: ev.ret_pct, z: ev.z,
+                residual_z: ev.residual_z, rvol: ev.rvol, beta: ev.beta, dd_from_high_pct: 0, weight: 0, sigma_eps_pct: null,
+                cold_start: false, near_52w_high: false, near_52w_low: false, thesis_label: "", thesis_state: "", _live: true });
+            }
+            renormWeights();
+          } else if (action === "remove") {
+            STATE.holdings = STATE.holdings.filter(function (h) { return h.symbol !== sym; }); renormWeights();
+          }
+          renderSignals(); renderMonChips(); renderSearch("");
+          var ev2 = res && res.evidence;
+          setNote((action === "add" ? "Added " : "Removed ") + sym + " — " +
+            (ev2 ? sym + " " + pct(ev2.ret_pct) + " (idiosyncratic " + Number(ev2.residual_z).toFixed(1) + "σ) computed live · " : "") +
+            "monitored: " + STATE.monitored.join(", ") + ". Full profiling &amp; alerts on the next run.");
         } catch (e) { setNote("Could not update: " + esc(e && e.message ? e.message : String(e)), true); }
       }
       function renderMonChips() {

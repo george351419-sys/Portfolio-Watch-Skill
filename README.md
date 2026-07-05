@@ -16,8 +16,9 @@ Load the Skill into Alva's Agent and just talk to it — *"watch my NVDA, TSLA,
 AAPL"*, later *"also watch COIN"*, *"stop watching TSLA"*. The **watched set is a
 live, user-owned config** — edit it by asking the Agent, **or right in the
 Playbook UI** (search a ticker to add, ✕ a chip to remove — wired to a registered
-UDF that writes your config). Verified: 4 → +COIN → −TSLA both ways; new names get
-auto-profiled. Then tell it *why* you hold
+UDF that writes your config **and computes the new ticker's σ-analysis on the
+spot**, so it appears in Signals/Holdings immediately). Verified: 4 → +COIN →
+−TSLA both ways; new names get auto-profiled. Then tell it *why* you hold
 something — *"I hold MSTR as a leveraged BTC play"* — and it watches whether that
 reason still holds. On **2024-11-21**,
 Bitcoin rose **+4.3%** so MSTR *should* have risen ~+6% — instead it **crashed

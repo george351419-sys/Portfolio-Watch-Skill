@@ -95,9 +95,11 @@ needs a code change:
   watch COIN", "stop watching TSLA"); it edits the config. (b) Do it **in the
   Playbook UI**: a registered **UDF (`updateWatchlist`)** lets the search box add a
   ticker and a chip's ✕ remove one, writing directly to the config (no charge;
-  unauthenticated viewers see a sign-in prompt). Either way the profile + watch
-  feeds pick it up next run. Verified live: NVDA/TSLA/AAPL/MSTR → +COIN (5, thesis
-  auto-applied) → −TSLA (4), by config edit and by UDF.
+  unauthenticated viewers see a sign-in prompt). On add, the UDF **computes the new
+  ticker's σ-analysis on the spot** and returns it, so the interface shows the
+  added name's move/z_idio/tier immediately; full profiling + alerts follow on the
+  next scheduled run. Verified live: NVDA/TSLA/AAPL/MSTR → +COIN (evidence computed
+  live, thesis auto-applied) → −TSLA, by config edit and by UDF.
 - **New names get the full treatment automatically** — a freshly added ticker is
   profiled (its own σ/β/σ_ε baseline), and if it's new-listed it enters the
   cold-start path (§Cold Start). This is the reusability requirement made
