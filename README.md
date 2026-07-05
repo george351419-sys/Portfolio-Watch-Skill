@@ -22,7 +22,7 @@ dimensions to watch, what counts as a real move vs noise, and how to rank signal
 1. **[`One-Pager.md`](One-Pager.md)** — the thinking in one page (EN + 中文, with figures). Start here.
 2. **[`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md)** — the actual Skill: intake → per-holding baseline → 4-layer monitoring → three-check gate → noise filters → 0–100 ranking → interface → alerts → cold-start & latency.
 3. **The live Playbook** (link above) — interface + a real delivered alert deep-linking back to the matching card.
-4. **[`Strategy-Analysis.md`](Strategy-Analysis.md)** — the math底稿: adaptive baselines (EWMA/MAD), residual-vol z, t-thresholds, FDR, hysteresis, the scoring algebra, cold-start, and the alert-fusion delivery model.
+4. **[`Strategy-Analysis.md`](Strategy-Analysis.md)** — the math底稿: adaptive baselines (EWMA/MAD), residual-vol z, t-thresholds, FDR, hysteresis, the scoring algebra, cold-start, alert fusion, and thesis-linked escalation (§7b).
 5. **[`Backtest-Report.md`](Backtest-Report.md)** — historical replay & precision-recall calibration on 29 symbols (Mag7 + 20 untuned stocks + BTC/LTC), 37,837 days. Proves reusability and honestly bounds what "effective" means.
 
 ## Full file map
@@ -33,6 +33,8 @@ One-Pager.md                  Deliverable 3 — one-pager (bilingual, embeds ass
 Strategy-Analysis.md          Math appendix — rigorous derivations (§7 = alert fusion)
 alert-fusion.js               Reference implementation of Narrative Fusing + Silent Update
                               (self-test verified on Alva runtime: 3-event incident → 1 card)
+thesis-monitor.js             Thesis-linked monitoring — a broken buy-thesis escalates to P0
+                              (verified on real MSTR/BTC data: 2024-11-21 −4.6σ leverage-thesis break)
 Backtest-Report.md            Precision-recall report, 3 rounds, per-cohort reusability
 backtest/                     Reproducibility: runtime script + raw result JSONs
   pw-backtest.js              Alva runtime backtest (seed 20260705)

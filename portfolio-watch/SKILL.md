@@ -78,6 +78,12 @@ Defaults when missing:
 Resolve nothing silently: if a symbol won't resolve, tell the user and continue
 with the rest.
 
+**Capture any stated thesis.** If the user says *why* they hold something ("MSTR
+as a leveraged BTC play", "NVDA to beat the semis"), parse and store it as a
+per-holding thesis (holding · relation · reference · direction) — it drives
+thesis-linked monitoring (§Thesis-Linked). Optional; absence just means the
+default market model.
+
 ## Step 2 — Profile Feed (the reusability engine)
 
 Before watching anything, build one feed that persists a **profile per holding**
@@ -276,7 +282,7 @@ Portfolio-level breaches and hard events bypass the gate.
 ### Severity → handling
 | Tier | Definition | Handling |
 |---|---|---|
-| P0 | hard event, portfolio drawdown/concentration breach, or score ≥ 80 | immediate single push, deep-linked to the matching card |
+| P0 | hard event, **thesis break** (§Thesis-Linked), portfolio drawdown/concentration breach, or score ≥ 80 | immediate single push, deep-linked to the matching card |
 | P1 | score 60–79 (e.g. 2–2.5σ confirmed, clustered revisions, slow-signal trigger) | folded into a digest (max two windows/day: morning + evening) |
 | P2 | score 40–59 (near-threshold, milestones, FYI) | interface + digest, no push |
 | P3 | score < 40 | archived unless Sensitive mode |
@@ -300,6 +306,56 @@ Portfolio-level breaches and hard events bypass the gate.
    background news.
 
 ---
+
+## Thesis-Linked Monitoring (v1 capability)
+
+The highest-value question isn't "what is the market doing?" — it's **"is the
+reason I bought this still true?"** A generic 2σ move is *informational*; a broken
+buy-thesis is *decision-grade*. So a thesis is a **first-class monitored object**,
+and its violation escalates **straight to P0** — it challenges the user's
+decision, not just reports a move.
+
+**Capture (at intake, natural language).** When the user states *why* they hold
+something, parse it into a thesis: *"I hold MSTR as a leveraged BTC play"* → the
+holding, a relation (leverage/proxy), a reference asset (BTC), a direction. Store
+per-holding. Thesis is optional and additive — no thesis → the holding just uses
+the default market model.
+
+**Derive a monitorable invariant.** Each thesis type maps to something checkable
+from price alone (fits the daily demo):
+- **Proxy / leverage** ("X is my leveraged Y"): X must track Y, amplified — high
+  β_Y and positive correlation ρ(X,Y).
+- **Relative-outperformance** ("X to beat sector Z"): X must outperform Z.
+- **Hedge / diversifier** ("X hedges my stocks"): X must stay *negatively*
+  correlated to the book in drawdowns.
+- (Fundamental-level & catalyst theses need extra data → v2.)
+
+**Watch the invariant — the framing flips.** In the base model, idiosyncratic
+(residual) moves are the *signal* and market moves are rolled up as *noise*. A
+thesis inverts this: it declares what *should* be correlated, so a **residual
+against the thesis benchmark is a thesis violation**. Same residual-vol math
+(§Step 4), re-pointed at the thesis reference asset:
+```
+expected_t   = β_ref · r_ref,t          # thesis-implied move
+divergence_t = r_holding,t − expected_t  # what the thesis failed to explain
+V            = |divergence_t| / σ_resid  # violation severity, in σ
+```
+**Thesis-break trigger:** the reference made a material move (|z_ref| ≥ 1.5) yet
+the holding diverged against the thesis (V ≥ 2). Plus a **slow regime check**:
+rolling ρ(holding, ref) decaying toward 0 over weeks = the relationship is
+breaking even without one dramatic day. A confirmed break → **P0, bypassing the
+normal σ gate** (escalation weight is maximal by construction).
+
+**Verified on real data.** `thesis-monitor.js` run on 5y MSTR/BTC found e.g.
+**2024-11-21: BTC +4.3% but MSTR −16.2%** (thesis-expected +6.5% at β=1.5) — a
+−22.6% divergence = **4.6σ against the thesis** → P0: *"you hold MSTR as leveraged
+BTC, but on a day BTC rallied it fell 16% — the leverage relationship isn't
+holding."*
+
+**Interface & alert.** Each thesis-carrying holding shows a **thesis chip**
+(`intact / strained / BROKEN`, with live β/ρ vs expected); a break surfaces as a
+distinct top-of-feed **"Thesis break"** signal and a P0 alert whose body names the
+violated logic, not just the price. The portfolio lens gains a *thesis-health* row.
 
 ## The Interface (Playbook)
 
@@ -473,9 +529,12 @@ then equal-weight impact, and prompt the user to add weights.
 
 ## Extensions (v2+)
 
-Custom thesis-linked triggers · multi-portfolio comparison · Altra-backed
-"what-if" (how a hedge would have changed drawdown) · deeper on-chain / options
-microstructure.
+Fundamental-level & catalyst theses (need extra data) · multi-portfolio
+comparison · Altra-backed "what-if" (how a hedge would have changed drawdown) ·
+deeper on-chain / options microstructure.
+
+*(Proxy/leverage, relative-performance, and hedge theses are v1 — see
+§Thesis-Linked Monitoring.)*
 
 ---
 

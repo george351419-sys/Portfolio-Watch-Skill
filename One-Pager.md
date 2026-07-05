@@ -84,6 +84,20 @@ threshold-flapping. (Full derivations in `Strategy-Analysis.md`.)
 
 ![Narrative Fusing + Silent Update](assets/fig3-fusion-silent-update.png)
 
+## Watch the thesis, not just the market (the PM highlight)
+
+The highest-value question isn't "what's the market doing" but **"is the reason I
+bought this still true?"** If the user says *"I hold MSTR as a leveraged BTC
+play,"* the Skill captures that thesis and monitors its **invariant** (MSTR should
+track BTC, amplified). When BTC rallies and MSTR *doesn't*, that's not market
+noise — it's a **thesis break**, and it escalates **straight to P0** because it
+challenges the user's decision, not just reports a move. Elegantly, this reuses
+the exact residual-vol engine, just re-pointed at the thesis's reference asset: in
+the base model residuals are the *signal* and market moves are *noise*; a thesis
+inverts it — a residual against the thesis benchmark *is* the violation. Verified
+on real data: **2024-11-21, BTC +4.3% but MSTR −16.2% — a −4.6σ break of the
+leverage thesis → P0.** (`thesis-monitor.js`)
+
 ## I built it to prove it's real
 
 ![Residual-vol fix reclassifies AAPL P1 to P0](assets/fig2-residual-vol-fix.png)
@@ -149,6 +163,10 @@ reference implementation).*
 - **IM 投递侧降噪**：一个事件在时间轴上展开（NVDA 大跌 → 大单做空 → 财报利空），三条正确信号炸用户三次震动。解法是 **主权合并 + 静默覆盖**——按因果优先级让财报事件夺取头条、前面降为证据链；首条推送震一次，10 分钟窗口内的关联变化用 `editMessageText`（Telegram 编辑天然不响铃）改同一张卡。手机震动次数 = **不同事件数**（1+升级次数），而非**事实条数**。
 
 ![主权合并 + 静默覆盖](assets/fig3-fusion-silent-update.png)
+
+## 盯的是假设，不只是市场（PM 亮点）
+
+最高价值的问题不是"市场在干嘛"，而是"**我当初买它的理由还成立吗**"。用户说"我把 MSTR 当 BTC 杠杆拿"，Skill 就捕获这个 thesis 并监控它的**不变量**（MSTR 应放大跟随 BTC）。当 BTC 大涨而 MSTR 没涨——这不是市场噪音，是**假设破裂**，直接**越级 P0**，因为它挑战的是用户的**决策**，不只是报告一次移动。优雅之处：它复用了同一套残差波动率引擎，只是把基准换成 thesis 指定的参照资产——基础模型里残差是*信号*、市场是*噪音*；thesis 把它翻转——对 thesis 基准的残差**就是**违背。真实数据验证：**2024-11-21，BTC +4.3% 但 MSTR −16.2%，对杠杆假设的 −4.6σ 破裂 → P0。**（`thesis-monitor.js`）
 
 ## 我做出来证明它是真的
 
