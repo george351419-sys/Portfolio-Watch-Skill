@@ -117,6 +117,15 @@ the in-loop LLM into a monitorable proxy, honestly bounded by what data exists.
 > single-stock moves — just pointed at Bitcoin instead of the market. Same
 > thermometer, different spot, completely different meaning.
 
+## Usable, not just smart
+
+The Playbook isn't a black box. It's split into three tabs — **Watch / Theory /
+Formulas** — so the user sees the alerts, the plain-language reasoning, *and* the
+exact formulas. On Watch you can **search any ticker and add it to your watchlist,
+each with its own σ-thresholds**, and drag sliders to re-threshold the live
+evidence and see signals appear or clear in real time. Every parameter is visible
+and adjustable — a good product, not just a good model.
+
 ## I built it to prove it's real
 
 ![Residual-vol fix reclassifies AAPL P1 to P0](assets/fig2-residual-vol-fix.png)
@@ -190,6 +199,10 @@ reference implementation).*
 捕获很低摩擦、闭环是动态的：用户明说，或对系统**提议**的候选一键确认（绝不逐只追问），且随时可加可改。而且**可扩展**——多数假设归结为几种不变量形状（关系/排序/相关/水平），新假设通常是换*参数*而非写代码；真正全新的由回路里的 LLM 编译成可监控代理，能盯什么、盯不了什么都如实说明。
 
 > **用大白话说。** 你买一只股票时，心里有个*理由*——"我买 MSTR，是因为它像**比特币的放大版**：比特币涨，它涨得更猛。"Skill 会**记住这个理由**，并悄悄检查它还成不成立。它从过去 60 天学到两件事：MSTR 平时大概是比特币的 **1.5 倍猛**，以及每天多大的误差算**正常**。然后每天对账"该发生的"和"实际发生的"：2024-11-21 比特币涨了 +4.3%，MSTR **本该涨约 +6%**，却**暴跌 −16%**——这个差距是平时正常波动的 **4.8 倍**。这不是噪音，是你**买它的理由断了**，所以拉最高级警报。最妙的是：这用的是系统本来就有的那把"尺子"（平时用来量个股相对大盘的异常），只是把参照物**从大盘换成了比特币**。同一个体温计，换个地方量，意义完全不同。
+
+## 好用,不只是聪明
+
+Playbook 不是黑盒。它分成三个 tab——**Watch / Theory / Formulas**——用户既看到预警,也看到大白话的原理,还看到精确的公式。在 Watch 页可以**搜索任意标的加入观测列表,每只单独设 σ 阈值**,拖动滑块实时重设门槛、看信号增减。每个参数都可见可调——是个好产品,不只是个好模型。
 
 ## 我做出来证明它是真的
 

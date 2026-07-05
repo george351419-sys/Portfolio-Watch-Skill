@@ -34,6 +34,17 @@ new ones are added by parameters, not code — and a genuinely novel thesis is
 compiled by the in-loop LLM into a monitorable proxy, honestly bounded by the data
 that exists. See [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) §Thesis-Linked.
 
+## 🔎 Also usable, not just smart
+
+The Playbook is organized into three tabs — **Watch · Theory · Formulas** — so a
+user sees the alerts, *and* the reasoning, *and* the exact formulas. On the Watch
+tab you can **search any ticker and add it to your watchlist, each with its own
+σ-thresholds**, and drag sliders to re-threshold the live evidence and watch
+signals appear or clear in real time. The methodology and every parameter are
+visible and adjustable — not a black box.
+
+![Three tabs · search any ticker · per-ticker thresholds](assets/interface-tabs-search.png)
+
 > **中文一句话**：一个可复用的 Portfolio Watch Skill——加载后对任意持仓生成"界面 + 智能告警"的 Playbook。亮点是**盯的不只是"市场发生了什么"，而是"你当初买入的理由还成立吗"**：把 MSTR 当"比特币放大版"持有，当比特币大涨而 MSTR 反而暴跌，说明买入逻辑破裂，直接越级 P0 告警。已在 Alva 上真 build、真推送、并用 5 年历史回测验证。
 
 ---
@@ -78,7 +89,7 @@ notes/                        Working trail (not deliverables)
 ## What actually got built on Alva (deliverable 2)
 
 - **Two feeds** — `pw-profile` (adaptive per-holding baseline: EWMA/MAD vol, OLS β, residual vol σ_ε; cold-start prior) → `pw-watch` (residual-vol z-scores, FDR, hysteresis, bounded 0–100 scoring, quiet-by-default `notify/message`).
-- **Interface** — live-read views (portfolio overview · ranked signals with `#sig-<id>` anchors · holdings grid with σ-bars · portfolio lens), plus a **"How this works" panel** (theory, formulas, calc logic) and **interactive threshold controls** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; the thresholds are re-applied client-side). Passes `alva lint`.
+- **Interface** — **three tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist, each with **its own thresholds**, over an on-feed universe), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
 - **Alert** — web push delivered end-to-end (status = sent) with a deep link that lands on the matching card. Verified.
 - **Demo pin** — the Playbook is pinned to the 2026-06-25 session (a real day AAPL fell −6.1%, a −4.1σ idiosyncratic P0) so the interface/alert show a populated, real state. To run live: redeploy `pw-watch` without the `asof` arg.
 
