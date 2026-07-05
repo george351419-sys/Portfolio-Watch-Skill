@@ -315,20 +315,43 @@ buy-thesis is *decision-grade*. So a thesis is a **first-class monitored object*
 and its violation escalates **straight to P0** — it challenges the user's
 decision, not just reports a move.
 
-**Capture (at intake, natural language).** When the user states *why* they hold
-something, parse it into a thesis: *"I hold MSTR as a leveraged BTC play"* → the
-holding, a relation (leverage/proxy), a reference asset (BTC), a direction. Store
-per-holding. Thesis is optional and additive — no thesis → the holding just uses
-the default market model.
+**Capture — three sources (reliability descending).** A thesis can arrive:
+1. **Stated** — the user says *why* at intake ("I hold MSTR as a leveraged BTC
+   play"); parse into (holding · relation · reference · direction). Most reliable.
+2. **Proposed & confirmed** — if unstated, *infer a likely thesis and offer it for
+   one-tap confirm* rather than interrogate: "MSTR looks like a BTC proxy — watch
+   that relationship? [yes / it's something else / no thesis]". One tap, near-zero
+   friction.
+3. **Data-inferred** — as a fallback, propose the asset it historically tracks
+   most tightly as a candidate.
 
-**Derive a monitorable invariant.** Each thesis type maps to something checkable
-from price alone (fits the daily demo):
-- **Proxy / leverage** ("X is my leveraged Y"): X must track Y, amplified — high
-  β_Y and positive correlation ρ(X,Y).
-- **Relative-outperformance** ("X to beat sector Z"): X must outperform Z.
-- **Hedge / diversifier** ("X hedges my stocks"): X must stay *negatively*
-  correlated to the book in drawdowns.
-- (Fundamental-level & catalyst theses need extra data → v2.)
+**Elicitation rule — propose, don't interrogate.** Never ask a thesis question per
+holding (that violates the one-blocking-question rule and trains users to ignore
+you). Ask/propose only where a thesis materially changes monitoring *and* is
+likely — concentrated positions, and names with an obvious proxy (crypto-linked,
+ADRs, thematic). And a thesis is **dynamic, not intake-only**: the user can add or
+revise one anytime in plain language ("actually I hold XOM for the dividend as
+long as oil stays above $70") and the loop picks it up on the next run.
+
+**Derive a monitorable invariant — an extensible library.** A thesis is ultimately
+a *testable invariant*, and testable invariants come in only a few mathematical
+shapes. So a "new thesis" is usually **new parameters, not new code** — parse →
+route to a template → fill parameters → live in seconds:
+
+| Thesis shape | Invariant type | Monitored as |
+|---|---|---|
+| "X is my leveraged / proxy Y" | **relationship** | residual vs Y (built) |
+| "X to beat sector Z" | **ranking** | relative-performance spread vs Z |
+| "X hedges my book" | **correlation** | sign of ρ(X, book) in drawdowns |
+| "hold XOM while oil > $70" | **level** | a named series crossing a threshold |
+| "X should move with gold" | **correlation** | rolling ρ decay toward 0 |
+
+For a genuinely novel shape (e.g. "I hold PFE for its Alzheimer's approval"), the
+in-loop LLM acts as a **thesis compiler**: translate the thesis into a *monitorable
+proxy* (approval thesis → FDA/PDUFA calendar + trial-readout news + the stock's
+reaction), then **check the data exists** — wire it if so, or honestly state what
+can and can't be watched rather than fake coverage. (Fundamental-level & catalyst
+theses need extra data → v2.)
 
 **Watch the invariant — the framing flips.** In the base model, idiosyncratic
 (residual) moves are the *signal* and market moves are rolled up as *noise*. A
