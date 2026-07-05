@@ -84,11 +84,29 @@ per-holding thesis (holding · relation · reference · direction) — it drives
 thesis-linked monitoring (§Thesis-Linked). Optional; absence just means the
 default market model.
 
+## The watched set is a user-owned config (dynamic add/remove)
+
+The list of monitored tickers is **not hardcoded** — it's a config the user owns
+(e.g. `~/feeds/pw-config/v1/holdings.json`: `[{symbol, name, weight, sector,
+thesis?}]`). The feeds **read it at runtime**, so changing what's watched never
+needs a code change:
+
+- **Add / remove anytime by talking to the Agent** — "also watch COIN", "stop
+  watching TSLA", "make MSTR a leveraged-BTC thesis". The Agent edits the config;
+  the profile + watch feeds pick it up on their next run (re-profile new names,
+  drop removed ones). Verified live: NVDA/TSLA/AAPL/MSTR → +COIN (5, COIN's thesis
+  auto-applied) → −TSLA (4), by editing the config alone.
+- **New names get the full treatment automatically** — a freshly added ticker is
+  profiled (its own σ/β/σ_ε baseline), and if it's new-listed it enters the
+  cold-start path (§Cold Start). This is the reusability requirement made
+  operational: the Skill works on any set the user names, and the set is live.
+- Weights are optional (equal-weight default); per-holding `thesis` is optional.
+
 ## Step 2 — Profile Feed (the reusability engine)
 
 Before watching anything, build one feed that persists a **profile per holding**
-from Data Skills history. This is what makes thresholds relative and routing
-correct.
+from the config above, using Data Skills history. This is what makes thresholds
+relative and routing correct.
 
 Per holding, compute and store:
 

@@ -1,0 +1,10 @@
+{
+  "portfolio_name": "My Watch",
+  "holdings": [
+    { "symbol": "NVDA", "name": "NVIDIA", "weight": 0.25, "sector": "Semiconductors" },
+    { "symbol": "TSLA", "name": "Tesla", "weight": 0.25, "sector": "Autos/EV" },
+    { "symbol": "AAPL", "name": "Apple", "weight": 0.25, "sector": "Hardware" },
+    { "symbol": "MSTR", "name": "MicroStrategy", "weight": 0.25, "sector": "Crypto-linked",
+      "thesis": { "ref": "BTC", "refType": "crypto", "type": "leverage", "label": "leveraged BTC play" } }
+  ]
+}

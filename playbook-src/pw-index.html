@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio Watch</title>
+    <link rel="stylesheet" href="https://alva-ai-static.b-cdn.net/design-system/v1/design-system.css" />
+    <script src="https://unpkg.com/@alva-ai/toolkit/dist/browser.global.js"></script>
+    <style>
+      html { height: 100%; overflow: hidden; }
+      body { height: 100%; overflow-y: auto; overflow-x: hidden; background: var(--b0-page);
+        font-family: "Delight", -apple-system, "OPPO Sans 4.0", BlinkMacSystemFont, sans-serif;
+        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; color: var(--text-n9); }
+      * { box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+      *::-webkit-scrollbar { display: none; }
+      .playbook-container { width: 100%; max-width: 1120px; margin: 0 auto; padding: var(--spacing-s) var(--spacing-xxl) var(--spacing-xxxxl); }
+      @media (max-width: 768px) { .playbook-container { padding: var(--spacing-m); } }
+      .pw-tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; background: var(--b0-page); padding: 8px 0; border-bottom: 0.5px solid var(--line-l12); }
+      .pw-tab { font-size: 13px; font-weight: 500; color: var(--text-n5); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+      .pw-tab.pwsel { color: var(--text-n9); background: var(--grey-g2, #f1f0ef); }
+      .pw-panel { display: none; }
+      .pw-panel.pwsel { display: block; }
+      .sec-title { font-size: 13px; font-weight: 500; color: var(--text-n7); letter-spacing: 0.02em; text-transform: uppercase; margin: var(--spacing-xl) 0 var(--spacing-s); }
+      .card { background: var(--grey-g01); border: 0.5px solid var(--line-l12); border-radius: 12px; padding: var(--spacing-m); }
+      .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-s); }
+      .kpi-label { font-size: 12px; color: var(--text-n5); margin-bottom: 4px; }
+      .kpi-value { font-size: 22px; font-weight: 500; line-height: 1.1; }
+      .kpi-sub { font-size: 11px; color: var(--text-n5); margin-top: 4px; }
+      .pos { color: var(--main-m3); } .neg { color: var(--main-m4); } .muted { color: var(--text-n5); }
+      .note { margin-top: var(--spacing-s); font-size: 12px; color: var(--text-n7); padding: var(--spacing-xs) var(--spacing-s); background: var(--grey-g01); border-left: 2px solid var(--line-l2); border-radius: 4px; }
+      .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
+      .t-P0 { background: rgba(220,38,38,0.12); color: var(--main-m4); }
+      .t-P1 { background: rgba(217,119,6,0.14); color: #b45309; }
+      .t-P2 { background: var(--grey-g2, #eee); color: var(--text-n7); }
+      .t-THESIS { background: rgba(124,58,237,0.14); color: #6d28d9; }
+      .sig { border-left: 3px solid var(--line-l2); margin-bottom: var(--spacing-s); scroll-margin-top: 60px; }
+      .sig.tier-P0 { border-left-color: var(--main-m4); } .sig.tier-P1 { border-left-color: #d97706; } .sig.tier-P2 { border-left-color: var(--line-l3); }
+      .sig.thesis { border-left-color: #7c3aed; background: linear-gradient(0deg, var(--grey-g01), rgba(124,58,237,0.05)); }
+      .sig-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+      .sig-sym { font-size: 16px; font-weight: 500; }
+      .sig-score { margin-left: auto; font-size: 12px; color: var(--text-n5); }
+      .sig-line { font-size: 13px; color: var(--text-n9); margin-top: 6px; }
+      .sig-why { font-size: 12px; color: var(--text-n7); margin-top: 4px; }
+      .sig-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--text-n5); margin-top: 8px; }
+      .flash { animation: flash 2.4s ease-out 1; }
+      @keyframes flash { 0% { background: rgba(217,119,6,0.16); } 100% { background: var(--grey-g01); } }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--spacing-s); }
+      .hld-top { display: flex; align-items: baseline; gap: 8px; }
+      .hld-sym { font-size: 15px; font-weight: 500; } .hld-name { font-size: 11px; color: var(--text-n5); }
+      .hld-price { margin-left: auto; font-size: 14px; } .hld-ret { font-size: 20px; font-weight: 500; margin-top: 6px; }
+      .sbar { position: relative; height: 6px; background: var(--grey-g2, #eee); border-radius: 999px; margin: 10px 0 8px; }
+      .sbar-mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line-l3); }
+      .sbar-fill { position: absolute; top: 0; bottom: 0; border-radius: 999px; }
+      .hld-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 11px; color: var(--text-n5); margin-top: 4px; }
+      .tag52 { font-size: 10px; padding: 0 5px; border-radius: 999px; background: var(--grey-g2, #eee); color: var(--text-n7); }
+      .chip-thesis { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px; margin-top: 6px; }
+      .ts-intact { background: rgba(22,163,74,0.12); color: var(--main-m3); } .ts-strained { background: rgba(217,119,6,0.14); color: #b45309; } .ts-BROKEN { background: rgba(220,38,38,0.14); color: var(--main-m4); }
+      .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-m); }
+      .ctrl label { font-size: 12px; color: var(--text-n7); display: flex; justify-content: space-between; }
+      .ctrl .val { color: var(--main-m4); font-weight: 500; }
+      .ctrl input[type="range"] { width: 100%; margin-top: 8px; accent-color: #6d28d9; }
+      .hint { font-size: 11px; color: var(--text-n5); margin-top: 4px; }
+      .ctrl-summary { margin-top: var(--spacing-s); font-size: 12px; color: var(--text-n9); }
+      .btn-reset { font-size: 11px; color: #6d28d9; border: 0.5px solid var(--line-l3); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+      .search-wrap { position: relative; }
+      .search-in { width: 100%; font-size: 14px; padding: 9px 12px; border: 0.5px solid var(--line-l3); border-radius: 10px; background: var(--b0-page); color: var(--text-n9); font-family: inherit; }
+      .search-res { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+      .res-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--grey-g2, #f1f0ef); color: var(--text-n9); cursor: pointer; }
+      .wl-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 0.5px solid var(--line-l12); }
+      .wl-sym { font-size: 14px; font-weight: 500; min-width: 54px; }
+      .wl-mv { font-size: 12px; min-width: 130px; }
+      .wl-th { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+      .wl-th input { width: 46px; font-size: 11px; padding: 2px 4px; border: 0.5px solid var(--line-l3); border-radius: 6px; text-align: center; font-family: inherit; }
+      .wl-th span { font-size: 10px; color: var(--text-n5); }
+      .wl-x { color: var(--text-n5); cursor: pointer; font-size: 14px; padding: 0 4px; }
+      .method p { font-size: 13px; color: var(--text-n9); line-height: 1.6; margin: 0 0 12px; }
+      .method .lbl { font-weight: 500; }
+      .method code, .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--grey-g2, #f1f0ef); padding: 1px 5px; border-radius: 4px; }
+      .formula { display: block; padding: 10px 12px; margin: 4px 0 14px; white-space: pre-wrap; line-height: 1.5; }
+      .foot { margin-top: var(--spacing-xl); display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-n5); }
+      .alva-watermark { opacity: 0.5; }
+      .empty { font-size: 13px; color: var(--text-n5); padding: var(--spacing-m); text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="playbook-container">
+      <div class="pw-tabs" id="tabs">
+        <span class="pw-tab pwsel" data-tab="watch">Watch</span>
+        <span class="pw-tab" data-tab="theory">Theory</span>
+        <span class="pw-tab" data-tab="formulas">Formulas</span>
+      </div>
+
+      <!-- ===================== WATCH ===================== -->
+      <div class="pw-panel pwsel" id="tab-watch">
+        <div class="sec-title">Portfolio · <span id="asof">…</span></div>
+        <div class="kpi-row" id="kpis"></div>
+        <div id="marketNote"></div>
+
+        <div class="sec-title">Search &amp; watch any ticker</div>
+        <div class="card">
+          <div class="search-wrap">
+            <input class="search-in" id="search" placeholder="🔍  Search ticker (e.g. AMD, GOOGL, COIN)…" autocomplete="off" />
+            <div class="hint" style="margin-top:8px"><b>Sample tickers</b> · click to add, or type any symbol in the computed universe:</div>
+            <div class="search-res" id="searchRes"></div>
+          </div>
+          <div id="watchlist" style="margin-top:12px"></div>
+          <div class="hint" style="margin-top:8px">Each added ticker gets <b>its own thresholds</b> (σ), independent of the portfolio defaults — its σ-analysis is computed server-side from Alva data, saved in this browser. To <b>actually add/remove a monitored holding</b> (so it gets alerts), just tell your Alva Agent — "also watch COIN" / "stop watching TSLA" — it edits your watchlist config and the feed picks it up next run.</div>
+        </div>
+
+        <div class="sec-title">Tune portfolio thresholds · what-if</div>
+        <div class="card">
+          <div class="ctrl-grid">
+            <div class="ctrl"><label>Interface (surface) <span class="val" id="vSurface">2.0σ</span></label><input type="range" id="sSurface" min="1.0" max="3.0" step="0.1" value="2.0" /><div class="hint">show a move at ≥ this many σ</div></div>
+            <div class="ctrl"><label>Push alert <span class="val" id="vPush">2.5σ</span></label><input type="range" id="sPush" min="1.5" max="4.0" step="0.1" value="2.5" /><div class="hint">send a phone alert at ≥ this many σ</div></div>
+            <div class="ctrl"><label>Force P0 <span class="val" id="vForce">3.5σ</span></label><input type="range" id="sForce" min="2.5" max="5.0" step="0.1" value="3.5" /><div class="hint">top-priority immediate push</div></div>
+          </div>
+          <div class="ctrl-summary" id="ctrlSummary"></div>
+          <div class="hint" style="margin-top:8px">Live what-if — re-applies to the evidence already computed for each holding, in your browser. Thesis breaks stay P0. <span class="btn-reset" id="btnReset" role="button" tabindex="0">reset</span></div>
+        </div>
+
+        <div class="sec-title">Signals — ranked by impact</div>
+        <div id="signals"><div class="empty">Loading…</div></div>
+
+        <div class="sec-title">Holdings</div>
+        <div class="grid" id="holdings"></div>
+
+        <div class="sec-title">Portfolio lens</div>
+        <div class="card" id="lens"></div>
+      </div>
+
+      <!-- ===================== THEORY ===================== -->
+      <div class="pw-panel" id="tab-theory">
+        <div class="sec-title">The idea</div>
+        <div class="card method">
+          <p><span class="lbl">The job isn't to report the market — it's to route your attention.</span> A good watch surface separates real signal from market noise for a portfolio it has never seen, and only interrupts you when it's worth it.</p>
+          <p><span class="lbl">1 · Every threshold is relative.</span> A move is judged in each holding's <b>own</b> volatility, never a fixed %. NVDA −3% is a normal day; a quieter name −3% is news. This is what lets one rule set fit any portfolio.</p>
+          <p><span class="lbl">2 · Strip the market, then look.</span> Most of a stock's daily move is just the market moving. We remove that first and measure only what's left — the <i>idiosyncratic</i> part. A stock falling with the market isn't news; a stock falling <i>while the market rises</i> is.</p>
+          <p><span class="lbl">3 · One move isn't enough.</span> A real signal must be statistically unusual, idiosyncratic, and <i>confirmed</i> (by volume or an identifiable cause). A lone price blip with no volume and no reason is watched, not shouted about.</p>
+          <p><span class="lbl">4 · Kill the noise, keep the signal.</span> When the whole market drops, we send <b>one</b> portfolio-level line, not ten stock alerts. And because we watch many names at once, we cap the rate of false alarms statistically.</p>
+          <p><span class="lbl">5 · Rank by your money, not by loudness.</span> A 5σ move in a 1% position can matter less than a 2.5σ move in a 40% position. Alerts are ordered by impact on your portfolio.</p>
+          <p><span class="lbl">6 · Watch the thesis, not just the price.</span> If you hold something for a reason ("MSTR as a leveraged BTC play"), we watch whether that reason still holds. When it breaks, that's the most important alert there is — it challenges your decision.</p>
+          <p class="muted" style="font-size:12px">The exact formulas behind each point are in the <b>Formulas</b> tab.</p>
+        </div>
+      </div>
+
+      <!-- ===================== FORMULAS ===================== -->
+      <div class="pw-panel" id="tab-formulas">
+        <div class="sec-title">Formulas &amp; calculation</div>
+        <div class="card method" id="formulas"></div>
+      </div>
+
+      <div class="foot">
+        <span>Thresholds relative to each holding's own volatility · moves in σ, not raw % · quiet-by-default alerts</span>
+        <span class="alva-watermark"><img src="https://alva-ai-static.b-cdn.net/icons/alva-watermark.svg" alt="Alva" height="14" /></span>
+      </div>
+    </div>
+
+    <script>
+      var USER = "george351419";
+      var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
+      var TH = { surface: 2.0, push: 2.5, force: 3.5 };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, added: [] };
+
+      function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
+      function client() { return new AlvaToolkit.AlvaClient(cfg()); }
+      async function readJson(path) { return await client().fs.read({ path: path }); }
+      function flat(rows) { var o = []; (rows || []).forEach(function (r) { if (r && r.items) o = o.concat(r.items); else if (r) o.push(r); }); return o; }
+      function pct(x) { return (x >= 0 ? "+" : "") + Number(x).toFixed(2) + "%"; }
+      function cls(x) { return x > 0 ? "pos" : x < 0 ? "neg" : "muted"; }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+      function tierOf(absZ, th) { th = th || TH; return absZ >= th.force ? "P0" : absZ >= th.push ? "P1" : absZ >= th.surface ? "P2" : null; }
+
+      // ---------- tabs ----------
+      function initTabs() {
+        var tabs = document.querySelectorAll(".pw-tab");
+        tabs.forEach(function (t) { t.addEventListener("click", function () {
+          tabs.forEach(function (x) { x.classList.remove("pwsel"); });
+          document.querySelectorAll(".pw-panel").forEach(function (p) { p.classList.remove("pwsel"); });
+          t.classList.add("pwsel"); document.getElementById("tab-" + t.getAttribute("data-tab")).classList.add("pwsel");
+        }); });
+      }
+
+      function renderOverview(o) {
+        document.getElementById("asof").textContent = o.as_of || "";
+        var expected = o.port_expected_pct == null ? '<div class="kpi-sub">—</div>' : '<div class="kpi-sub">market-expected ' + pct(o.port_expected_pct) + "</div>";
+        var kpis = [
+          { label: "Today", value: '<span class="' + cls(o.port_return_pct) + '">' + pct(o.port_return_pct) + "</span>", sub: expected },
+          { label: "Market (SPY)", value: o.market_return_pct == null ? "—" : '<span class="' + cls(o.market_return_pct) + '">' + pct(o.market_return_pct) + "</span>", sub: '<div class="kpi-sub">β-weighted ' + o.beta_weighted + "</div>" },
+          { label: "Drawdown", value: '<span class="' + cls(o.port_drawdown_pct) + '">' + pct(o.port_drawdown_pct) + "</span>", sub: '<div class="kpi-sub">from recent high</div>' },
+          { label: "Attention", value: '<span id="kAttn">' + (o.attention || 0) + "</span>", sub: '<div class="kpi-sub" id="kCounts"></div>' },
+          { label: "Sensitivity", value: '<span style="font-size:16px">' + esc(o.sensitivity) + "</span>", sub: '<div class="kpi-sub">' + (o.holdings_count || 0) + " holdings</div>" },
+        ];
+        document.getElementById("kpis").innerHTML = kpis.map(function (k) { return '<div class="card"><div class="kpi-label">' + k.label + '</div><div class="kpi-value">' + k.value + "</div>" + (k.sub || "") + "</div>"; }).join("");
+        document.getElementById("marketNote").innerHTML = o.market_note ? '<div class="note">' + esc(o.market_note) + "</div>" : "";
+      }
+
+      function evidenceCards() {
+        var cards = [];
+        STATE.holdings.forEach(function (h) {
+          var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol];
+          var isThesis = srv && (srv.kind === "thesis" || srv.thesis_break); var tier = isThesis ? "P0" : tierOf(absZ);
+          if (!tier) return;
+          var score = isThesis ? 100 : Math.round(100 * (1 - Math.exp(-absZ / 1.5)));
+          var confirmed = Number(h.rvol) >= 2; var headline, why, sigId, kind = isThesis ? "thesis" : "move";
+          if (srv && (isThesis || srv.tier)) { headline = srv.headline; why = srv.why; sigId = srv.signal_id; }
+          if (!headline) { headline = h.symbol + " " + pct(h.ret_pct) + " (" + Number(h.z).toFixed(1) + "σ), idiosyncratic " + Number(h.residual_z).toFixed(1) + "σ" + (confirmed ? ", volume " + Number(h.rvol).toFixed(1) + "× avg" : ", no volume confirm");
+            why = tier === "P0" ? "Large idiosyncratic move not explained by the market." : tier === "P1" ? "Notable single-name move beyond its residual-vol range." : "Elevated move, watching for confirmation."; }
+          if (!sigId) sigId = h.symbol + "_" + String(STATE.overview.as_of || "").replace(/-/g, "");
+          cards.push({ h: h, tier: tier, kind: kind, score: score, headline: headline, why: why, sigId: sigId });
+        });
+        cards.sort(function (a, b) { return b.score - a.score; });
+        return cards;
+      }
+      function renderSignals() {
+        var cards = evidenceCards(); var el = document.getElementById("signals");
+        if (!cards.length) el.innerHTML = '<div class="empty">No moves clear these thresholds — nothing beyond normal range.</div>';
+        else el.innerHTML = cards.map(function (c) {
+          var isT = c.kind === "thesis";
+          var badge = isT ? '<span class="badge t-THESIS">THESIS BREAK · P0</span>' : '<span class="badge t-' + c.tier + '">' + c.tier + "</span>";
+          return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span></div></div>";
+        }).join("");
+        var p0 = cards.filter(function (c) { return c.tier === "P0"; }).length, p1 = cards.filter(function (c) { return c.tier === "P1"; }).length, p2 = cards.filter(function (c) { return c.tier === "P2"; }).length;
+        document.getElementById("ctrlSummary").innerHTML = "At these thresholds: <b>" + (p0 + p1) + "</b> would push (" + p0 + " P0 · " + p1 + " P1), " + p2 + " surface only.";
+        var kc = document.getElementById("kCounts"); if (kc) kc.innerHTML = p0 + " P0 · " + p1 + " P1 · " + p2 + " P2";
+        var ka = document.getElementById("kAttn"); if (ka) ka.textContent = p0 + p1;
+        renderHoldings();
+      }
+      function sbar(z) { var c = z >= 0 ? "var(--main-m3)" : "var(--main-m4)"; var mag = Math.min(Math.abs(z) / 3, 1) * 50; var st = z >= 0 ? "left:50%;width:" + mag + "%;background:" + c : "right:50%;width:" + mag + "%;background:" + c; return '<div class="sbar"><div class="sbar-mid"></div><div class="sbar-fill" style="' + st + '"></div></div>'; }
+      function renderHoldings() {
+        var hs = STATE.holdings.slice().sort(function (a, b) { return b.weight - a.weight; });
+        document.getElementById("holdings").innerHTML = hs.map(function (h) {
+          var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol]; var isT = srv && (srv.kind === "thesis" || srv.thesis_break); var tier = isT ? "P0" : tierOf(absZ);
+          var badge = tier ? '<span class="badge t-' + (isT ? "THESIS" : tier) + '">' + (isT ? "THESIS" : tier) + "</span>" : "";
+          var tags = ""; if (h.near_52w_high) tags += '<span class="tag52">52w high</span>'; if (h.near_52w_low) tags += '<span class="tag52">52w low</span>';
+          var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
+          return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + "</div>";
+        }).join("");
+      }
+      function renderLens() {
+        var o = STATE.overview; var top = STATE.holdings.slice().sort(function (a, b) { return b.weight - a.weight; })[0];
+        document.getElementById("lens").innerHTML = '<div class="hld-meta" style="font-size:12px;color:var(--text-n7)"><span>Concentration — largest position ' + esc(top ? top.symbol : "") + " at " + Math.round((top ? top.weight : 0) * 100) + "%</span><span>β-weighted exposure " + o.beta_weighted + "× market</span><span>Book moved " + pct(o.port_return_pct) + " vs market-expected " + (o.port_expected_pct == null ? "—" : pct(o.port_expected_pct)) + "</span></div>";
+      }
+
+      // ---------- search + watchlist (per-ticker thresholds) ----------
+      function saveWL() { try { localStorage.setItem("pw_watchlist", JSON.stringify(STATE.added)); } catch (e) {} }
+      function loadWL() { try { var s = localStorage.getItem("pw_watchlist"); if (s) STATE.added = JSON.parse(s); } catch (e) {} }
+      function addTicker(sym) {
+        if (!STATE.universe[sym]) return;
+        if (STATE.added.some(function (a) { return a.sym === sym; })) return;
+        STATE.added.push({ sym: sym, th: { surface: TH.surface, push: TH.push, force: TH.force } });
+        saveWL(); renderWatchlist(); document.getElementById("search").value = ""; renderSearch("");
+      }
+      function removeTicker(sym) { STATE.added = STATE.added.filter(function (a) { return a.sym !== sym; }); saveWL(); renderWatchlist(); }
+      var SAMPLES = ["AMD", "GOOGL", "META", "MSFT", "COIN", "PLTR"];
+      function renderSearch(q) {
+        q = (q || "").toUpperCase().trim();
+        var el = document.getElementById("searchRes");
+        var pool = Object.keys(STATE.universe).filter(function (s) { return !STATE.added.some(function (a) { return a.sym === s; }); });
+        var syms;
+        if (!q) { syms = SAMPLES.filter(function (s) { return pool.indexOf(s) >= 0; }); pool.forEach(function (s) { if (syms.indexOf(s) < 0 && syms.length < 8) syms.push(s); }); }
+        else { syms = pool.filter(function (s) { return s.indexOf(q) === 0; }).sort().slice(0, 12); }
+        el.innerHTML = syms.length ? syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("") : '<span class="hint">no match in the computed universe — arbitrary tickers on demand are the UDF next step (see repo)</span>';
+        el.querySelectorAll("[data-add]").forEach(function (n) { n.addEventListener("click", function () { addTicker(n.getAttribute("data-add")); }); });
+      }
+      function renderWatchlist() {
+        var el = document.getElementById("watchlist");
+        if (!STATE.added.length) { el.innerHTML = '<div class="hint">No extra tickers yet — search above to add.</div>'; return; }
+        el.innerHTML = STATE.added.map(function (a) {
+          var u = STATE.universe[a.sym] || {}; var absZ = Math.abs(Number(u.residual_z)); var tier = tierOf(absZ, a.th);
+          var badge = tier ? '<span class="badge t-' + tier + '">' + tier + "</span>" : '<span class="muted" style="font-size:11px">quiet</span>';
+          return '<div class="wl-row"><span class="wl-sym">' + esc(a.sym) + '</span><span class="wl-mv ' + cls(u.ret_pct) + '">' + pct(u.ret_pct) + " · " + Number(u.residual_z).toFixed(1) + "σ idio " + badge + '</span><span class="wl-th"><span>surf</span><input data-sym="' + a.sym + '" data-k="surface" value="' + a.th.surface + '" /><span>push</span><input data-sym="' + a.sym + '" data-k="push" value="' + a.th.push + '" /><span>P0</span><input data-sym="' + a.sym + '" data-k="force" value="' + a.th.force + '" /><span class="wl-x" data-rm="' + a.sym + '">✕</span></span></div>';
+        }).join("");
+        el.querySelectorAll("input[data-sym]").forEach(function (n) { n.addEventListener("change", function () {
+          var a = STATE.added.filter(function (x) { return x.sym === n.getAttribute("data-sym"); })[0]; if (!a) return;
+          var v = parseFloat(n.value); if (!isNaN(v)) { a.th[n.getAttribute("data-k")] = v; saveWL(); renderWatchlist(); }
+        }); });
+        el.querySelectorAll("[data-rm]").forEach(function (n) { n.addEventListener("click", function () { removeTicker(n.getAttribute("data-rm")); }); });
+      }
+
+      function renderFormulas() {
+        document.getElementById("formulas").innerHTML =
+          '<p><span class="lbl">Adaptive baseline (per holding).</span> Volatility tracks the recent regime and resists contamination by the very move being detected:</p>' +
+          '<span class="formula">σ² = λ·σ²(prev) + (1−λ)·r²      λ = 0.94   (EWMA)\nσ_robust = 1.4826 · MAD          σ = max(σ_EWMA, σ_robust)</span>' +
+          '<p><span class="lbl">Idiosyncratic z — the ruler for single-name news.</span> Regress the holding on the market, keep the residual, and standardise by residual volatility:</p>' +
+          '<span class="formula">r = α + β·r_market + ε\nσ_ε = √( σ² − β²·σ_market² )\nz_idio = ( r − β·r_market ) / σ_ε</span>' +
+          '<p>Market-driven when <code>|z_idio| &lt; 2</code> and the market explains &gt; 50% (<code>φ = β·r_market / r &gt; 0.5</code>) → rolled up into one portfolio line, not fired per name.</p>' +
+          '<p><span class="lbl">Threshold with estimation error.</span> σ is estimated, so the bar is a t-quantile, not a fixed 2.0 — small samples widen it automatically:</p>' +
+          '<span class="formula">k = t(ν = n−1, 1−α/2)      k_eff = k · √(1 + 1/(2n))</span>' +
+          '<p><span class="lbl">Batch false positives.</span> Across N holdings × M dimensions, control the false-discovery rate (not per-test α) with Benjamini–Hochberg: keep the largest j with <code>p(j) ≤ (j/N)·q</code>, q = ' + (STATE.overview && STATE.overview.fdr_q != null ? STATE.overview.fdr_q : 0.10) + '.</p>' +
+          '<p><span class="lbl">Ranking 0–100 — impact on your money, not loudness.</span></p>' +
+          '<span class="formula">score = 30·S + 25·I + 15·C + 10·η + 20·F − 40·P\nS = 1 − e^(−|z_idio|/1.5)      (severity, saturating)\nI = min(|move|·weight / 1%, 1) (portfolio impact)\nC confidence · η novelty · F confluence · P noise penalty</span>' +
+          '<p>Tiers: <span class="badge t-P0">P0</span> ≥ 80 or force-σ · <span class="badge t-P1">P1</span> 60–79 · <span class="badge t-P2">P2</span> 40–59. Impact gate: a &lt; 2% position can\'t be P0 on price alone.</p>' +
+          '<p><span class="lbl">Thesis-linked escalation.</span> Same residual math, re-pointed at your thesis\'s reference asset:</p>' +
+          '<span class="formula">V = | r − β_ref·r_ref | / σ_resid\nbreak ⇔ |z_ref| ≥ 1 ∧ V ≥ 2.5 ∧ sign mismatch  →  P0</span>' +
+          '<p class="muted" style="font-size:12px">The Watch tab\'s sliders set k live; per-ticker inputs set k for each searched ticker. Full derivations: Strategy-Analysis.md in the repo.</p>';
+      }
+
+      function syncLabels() { document.getElementById("vSurface").textContent = TH.surface.toFixed(1) + "σ"; document.getElementById("vPush").textContent = TH.push.toFixed(1) + "σ"; document.getElementById("vForce").textContent = TH.force.toFixed(1) + "σ"; }
+      function wireControls() {
+        function on(id, key) { var el = document.getElementById(id); el.addEventListener("input", function () { TH[key] = Number(el.value); if (TH.push < TH.surface) TH.push = TH.surface; if (TH.force < TH.push) TH.force = TH.push; document.getElementById("sPush").value = TH.push; document.getElementById("sForce").value = TH.force; syncLabels(); renderSignals(); }); }
+        on("sSurface", "surface"); on("sPush", "push"); on("sForce", "force");
+        document.getElementById("btnReset").addEventListener("click", function () { TH = { surface: 2.0, push: 2.5, force: 3.5 }; document.getElementById("sSurface").value = 2.0; document.getElementById("sPush").value = 2.5; document.getElementById("sForce").value = 3.5; syncLabels(); renderSignals(); });
+        document.getElementById("search").addEventListener("input", function () { renderSearch(this.value); });
+        document.getElementById("search").addEventListener("focus", function () { renderSearch(this.value); });
+      }
+      function deepLinkScroll() { if (!location.hash) return; var el = document.querySelector(location.hash); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("flash"); } }
+
+      (async function () {
+        try {
+          initTabs(); loadWL();
+          STATE.overview = flat(await readJson(FEED + "portfolio/overview/@last/1"))[0];
+          STATE.holdings = flat(await readJson(FEED + "holdings/rows/@last/12"));
+          flat(await readJson(FEED + "signals/items/@last/12")).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
+          flat(await readJson(FEED + "universe/rows/@last/40")).forEach(function (u) { STATE.universe[u.symbol] = u; });
+          renderOverview(STATE.overview); syncLabels(); wireControls();
+          renderSignals(); renderLens(); renderFormulas(); renderSearch(""); renderWatchlist();
+          setTimeout(deepLinkScroll, 150);
+        } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }
+      })();
+    </script>
+  </body>
+</html>

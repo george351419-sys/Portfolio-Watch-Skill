@@ -12,8 +12,12 @@ works on a portfolio it has never seen.
 Most trackers tell you *"MSTR dropped 16%."* This one asks the more important
 question: **"is the reason you bought it still true?"**
 
-Tell the Skill *why* you hold something — *"I hold MSTR as a leveraged BTC
-play"* — and it watches whether that reason still holds. On **2024-11-21**,
+Load the Skill into Alva's Agent and just talk to it — *"watch my NVDA, TSLA,
+AAPL"*, later *"also watch COIN"*, *"stop watching TSLA"*. The **watched set is a
+live, user-owned config the Agent edits on request** (verified: 4 → +COIN → −TSLA
+by editing config alone; new names get auto-profiled). Then tell it *why* you hold
+something — *"I hold MSTR as a leveraged BTC play"* — and it watches whether that
+reason still holds. On **2024-11-21**,
 Bitcoin rose **+4.3%** so MSTR *should* have risen ~+6% — instead it **crashed
 −16%**, a gap **4.8× bigger than normal**. The buy-thesis broke, so it fires a
 **top-priority (P0) alert that names the broken logic, not just the price** — and
