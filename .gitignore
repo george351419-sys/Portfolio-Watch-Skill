@@ -1,0 +1,11 @@
+# Alva's official skill installed via `npx skills add` (third-party tooling, not part of this submission)
+.agents/
+skills-lock.json
+
+# OS / editor
+.DS_Store
+__pycache__/
+*.pyc
+
+# Company take-home prompt (third-party material) — kept local, not published
+portfolio-watch-pm-assignment*.md
