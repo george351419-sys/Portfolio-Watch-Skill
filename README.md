@@ -78,7 +78,7 @@ notes/                        Working trail (not deliverables)
 ## What actually got built on Alva (deliverable 2)
 
 - **Two feeds** — `pw-profile` (adaptive per-holding baseline: EWMA/MAD vol, OLS β, residual vol σ_ε; cold-start prior) → `pw-watch` (residual-vol z-scores, FDR, hysteresis, bounded 0–100 scoring, quiet-by-default `notify/message`).
-- **Interface** — five live-read views (portfolio overview · ranked signals with `#sig-<id>` anchors · holdings grid with σ-bars · portfolio lens). Passes `alva lint`.
+- **Interface** — live-read views (portfolio overview · ranked signals with `#sig-<id>` anchors · holdings grid with σ-bars · portfolio lens), plus a **"How this works" panel** (theory, formulas, calc logic) and **interactive threshold controls** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; the thresholds are re-applied client-side). Passes `alva lint`.
 - **Alert** — web push delivered end-to-end (status = sent) with a deep link that lands on the matching card. Verified.
 - **Demo pin** — the Playbook is pinned to the 2026-06-25 session (a real day AAPL fell −6.1%, a −4.1σ idiosyncratic P0) so the interface/alert show a populated, real state. To run live: redeploy `pw-watch` without the `asof` arg.
 
