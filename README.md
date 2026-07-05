@@ -27,6 +27,13 @@ moves — just pointed at Bitcoin instead of the market. Same thermometer, diffe
 spot, completely different meaning. (Plain-language write-up in the
 [One-Pager](One-Pager.md).)*
 
+**How it scales:** you state the thesis or confirm a *proposed* one in one tap
+(never interrogated per holding), and add more anytime. Most theses reduce to a
+few reusable invariant shapes (relationship / ranking / correlation / level), so
+new ones are added by parameters, not code — and a genuinely novel thesis is
+compiled by the in-loop LLM into a monitorable proxy, honestly bounded by the data
+that exists. See [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) §Thesis-Linked.
+
 > **中文一句话**：一个可复用的 Portfolio Watch Skill——加载后对任意持仓生成"界面 + 智能告警"的 Playbook。亮点是**盯的不只是"市场发生了什么"，而是"你当初买入的理由还成立吗"**：把 MSTR 当"比特币放大版"持有，当比特币大涨而 MSTR 反而暴跌，说明买入逻辑破裂，直接越级 P0 告警。已在 Alva 上真 build、真推送、并用 5 年历史回测验证。
 
 ---
