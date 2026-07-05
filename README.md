@@ -1,11 +1,33 @@
-# Portfolio Watch Skill — Submission
+# Portfolio Watch Skill
 
 A **Portfolio Watch Skill** for Alva: load it, hand it any portfolio, and get a
-Playbook with a live interface and quiet, ranked alerts. It decides which
-dimensions to watch, what counts as a real move vs noise, and how to rank signals
-— so it works on a portfolio it has never seen.
+Playbook with a live interface and quiet, ranked alerts — it decides which
+dimensions to watch, what's a real move vs noise, and how to rank signals, so it
+works on a portfolio it has never seen.
 
-> **中文一句话**：一个可复用的 Portfolio Watch Skill —— 加载后对任意持仓生成"界面 + 智能告警"的 Playbook。盯什么维度、什么算异动、什么是噪音、多信号如何排序，全由 Skill 决定，且对没见过的持仓也生效。已在 Alva 上真 build 并回测验证。
+---
+
+## ✨ Highlight — watch the *thesis*, not just the market
+
+Most trackers tell you *"MSTR dropped 16%."* This one asks the more important
+question: **"is the reason you bought it still true?"**
+
+Tell the Skill *why* you hold something — *"I hold MSTR as a leveraged BTC
+play"* — and it watches whether that reason still holds. On **2024-11-21**,
+Bitcoin rose **+4.3%** so MSTR *should* have risen ~+6% — instead it **crashed
+−16%**, a gap **4.8× bigger than normal**. The buy-thesis broke, so it fires a
+**top-priority (P0) alert that names the broken logic, not just the price** — and
+tapping it deep-links to this exact card.
+
+![Thesis break — live on the Alva Playbook](assets/thesis-break-demo.png)
+
+*Live Playbook · real MSTR/BTC data · web-push alert delivered. The clever part:
+this reuses the same "ruler" the system already uses to spot unusual single-stock
+moves — just pointed at Bitcoin instead of the market. Same thermometer, different
+spot, completely different meaning. (Plain-language write-up in the
+[One-Pager](One-Pager.md).)*
+
+> **中文一句话**：一个可复用的 Portfolio Watch Skill——加载后对任意持仓生成"界面 + 智能告警"的 Playbook。亮点是**盯的不只是"市场发生了什么"，而是"你当初买入的理由还成立吗"**：把 MSTR 当"比特币放大版"持有，当比特币大涨而 MSTR 反而暴跌，说明买入逻辑破裂，直接越级 P0 告警。已在 Alva 上真 build、真推送、并用 5 年历史回测验证。
 
 ---
 
@@ -39,7 +61,7 @@ Backtest-Report.md            Precision-recall report, 3 rounds, per-cohort reus
 backtest/                     Reproducibility: runtime script + raw result JSONs
   pw-backtest.js              Alva runtime backtest (seed 20260705)
   results-29symbols-400d.json / results-9symbols-400d.json
-assets/                       Figures fig1–fig6 (PNG)
+assets/                       Figures fig1–fig6 + thesis-break-demo.png (the hero shot)
 notes/                        Working trail (not deliverables)
   Monitoring-Strategy.md      First strategy draft (from initial research)
   SKILL_codex.md              A peer's version — its domain depth was absorbed into SKILL.md
