@@ -27,6 +27,30 @@ portfolio) locks in the first principle:
 
 ![Relative rulers](assets/fig1-relative-rulers.png)
 
+## Three convictions this is built on
+
+**1 · The paradigm shift — kill the fixed-% alert.** "Alert me if it moves 5%" is
+noise dressed up as monitoring: it screams every other day on a volatile name and
+stays silent while a stable one quietly breaks. Modern portfolio monitoring is
+**relative** — every move judged against that holding's *own* adaptive baseline
+(EWMA + robust vol), stripped of the market, and weighted by its **impact on your
+portfolio**. A fixed threshold treats a 1% position and a 40% position the same;
+this doesn't. That's not a tweak — it's a different paradigm.
+
+**2 · Signal-to-noise *is* the product.** The scarce resource isn't data, it's the
+user's **attention** — so it's the core asset to protect. A market-wide drop
+collapses ten correlated "alerts" into **one** portfolio line (β-rollup); a loud
+move in a 0.5% position is **silenced**, not paged; a stream of facts about one
+incident fuses into **one evolving card** (silent-update). Every choice optimizes
+the signal-to-noise ratio of what reaches the phone — and the backtest keeps it
+honest: at the push threshold we alert on ~3% of days.
+
+**3 · Alva-native, low-cost.** No new infrastructure — it's composed entirely from
+platform primitives: Data Skills for evidence, a Feed for the pipeline, live-read
+HTML for the interface, `notify/message` + the platform push fanout for alerts, a
+UDF for in-UI edits. It works *with* the ecosystem instead of around it — which is
+exactly why it was buildable end-to-end in days, not months.
+
 ## Four questions, four non-obvious product calls
 
 - **Which dimensions** — organized by *why an investor cares*, not by data
@@ -142,11 +166,18 @@ interface and alerts both running:
 
 ## Honest limits & next steps
 
+**Alerts / Telegram:** web push is verified end-to-end (delivered, `sent`, with a
+deep link back to the card). Telegram/Discord/Slack use the *same* pipeline —
+`feed_alert_ready` routes to whatever `active_channel` the user connects at
+alva.ai/settings, no code change; the demo account just hasn't linked one yet. The
+"silent-update" single-card edit is the one part that needs a direct bot token
+(BYOD) — its fusion logic is verified on the runtime, the editable delivery is
+documented and ready to wire.
+
 The demo runs at daily cadence (intraday/pre-market tightening lives in the Skill
 spec); options/short-interest confirmers and per-sector fundamental templates are
-Skill capabilities the 3-stock demo doesn't fully exercise; Telegram silent-update
-needs a bot token (the demo uses web push). All threshold parameters are
-**evidence-based starting points** and should be calibrated on historical replay
+Skill capabilities the 3-stock demo doesn't fully exercise. All threshold
+parameters are **evidence-based starting points** calibrated on historical replay
 (precision-recall). Sensitivity has three presets the user switches in plain
 language ("too noisy" → step down).
 
@@ -169,6 +200,14 @@ reference implementation).*
 > **所有阈值必须是相对的。** NVDA 跌 3% 是日常，可口可乐跌 3% 是新闻。Skill 在 Setup 阶段为每只持仓自动建"个股画像"（波动率、β、均量、流动性），一切异动都以**该股票自己的统计基线**为尺子。这是整个可复用性的引擎——它对了，其余自然成立。
 
 ![相对尺子](assets/fig1-relative-rulers.png)
+
+## 三条底层信念
+
+**1 · 范式转移——干掉固定百分比告警。** "涨跌超 5% 就提醒我"是伪装成监控的噪音:对高波动股三天两头乱叫,对稳健股悄悄破位却一声不吭。现代组合监控是**相对的**——每次移动都对照该持仓**自己**的自适应基线(EWMA + 稳健波动率)、剥离市场分量、再按它对**组合的影响**加权。固定阈值把 1% 仓位和 40% 仓位一视同仁;本方案不会。这不是微调,是换了范式。
+
+**2 · 信噪比**才是产品本身。稀缺的不是数据,是用户的**注意力**——所以它是要守护的核心资产。大盘普跌时,十条相关"告警"被上卷成**一条**组合级消息(β-rollup);0.5% 仓位的响新闻被**静默**、不推送;同一事件的一串事实融合成**一张演进卡片**(静默覆盖)。每个设计都在优化"抵达手机的信噪比"——而回测让它诚实:推送门槛下只对约 3% 的天告警。
+
+**3 · Alva 原生、低成本。** 没有新基建——全部由平台原语拼成:Data Skills 供证据、Feed 做管道、live-read HTML 做界面、`notify/message` + 平台推送 fanout 做告警、UDF 做界面内编辑。它**顺着**生态做而不是绕开它——这正是为什么它能在几天内端到端跑通,而不是几个月。
 
 ## 四个问题，四个非显然的产品判断
 
