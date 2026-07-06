@@ -14,6 +14,8 @@ works on a portfolio it has never seen.
 > 🤖 **Agents & maintainers:** read **[`AGENTS.md`](AGENTS.md)** — architecture, Alva primitives, the hard-won storage/deploy gotchas, and a step-by-step guide to extend or optimize safely.
 >
 > 🧭 **Iteration trajectory:** [`CHANGELOG.md`](CHANGELOG.md) — how the project evolved across review rounds (core build → signal sources → packaging → validation loop).
+>
+> 📊 **For a briefing / presentation:** open **[`project-report.html`](project-report.html)** — a self-contained one-page project report (open in any browser, project it, or print to PDF).
 
 ---
 
