@@ -1,0 +1,196 @@
+{
+  "scope": {
+    "symbols": 12,
+    "window": "~last 24 months",
+    "detection": "residual-vol z (SPY benchmark), thesis engine, smart-money overlay",
+    "honest": "no news/M&A/litigation/guidance events (endpoints unavailable); earnings only ~6 recent quarters; P0/P1 precision is a lower bound"
+  },
+  "event_counts": {
+    "total": 111,
+    "earnings": 42,
+    "insider": 62,
+    "thesis_break": 7
+  },
+  "coverage": {
+    "important_earnings_covered": "1 / 5",
+    "important_earnings_rate": 0.2,
+    "all_earnings_covered_rate": 0.52,
+    "thesis_breaks_all_caught": "7 / 7 (by construction)"
+  },
+  "unique_catches": {
+    "thesis_only": 7,
+    "smart_money_only_divergences": 59,
+    "note": "events a price-only tracker would miss \u2014 caught by the thesis engine or smart-money overlay"
+  },
+  "alert_concentration": {
+    "p_event_given_alert": 0.134,
+    "base_rate": 0.007
+  },
+  "noise": {
+    "duplicate_alerts_pct": 6,
+    "note": "share of alert-days that are consecutive same-symbol repeats \u2014 collapsed by fusion into one evolving card"
+  },
+  "median_lead_lag_days": 1,
+  "sample_log": [
+    {
+      "date": "2025-06-27",
+      "symbol": "AMZN",
+      "type": "insider_large",
+      "severity": 5428,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-09-12",
+      "symbol": "TSLA",
+      "type": "insider_large",
+      "severity": 1000,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": 0,
+      "unique": null
+    },
+    {
+      "date": "2025-12-19",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 308,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-11-11",
+      "symbol": "GOOGL",
+      "type": "insider_large",
+      "severity": 298,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-11-12",
+      "symbol": "GOOGL",
+      "type": "insider_large",
+      "severity": 294,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2026-06-18",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 186,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-06-09",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 143,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-06-03",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 132,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2024-12-16",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 131,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": 2,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2026-06-02",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 111,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": -1,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2026-06-04",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 110,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2026-02-27",
+      "symbol": "GOOGL",
+      "type": "insider_large",
+      "severity": 106,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-05-15",
+      "symbol": "AMZN",
+      "type": "insider_large",
+      "severity": 97,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-06-18",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 88,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2026-05-06",
+      "symbol": "AAPL",
+      "type": "insider_large",
+      "severity": 71,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    },
+    {
+      "date": "2025-12-05",
+      "symbol": "NVDA",
+      "type": "insider_large",
+      "severity": 64,
+      "detected": true,
+      "tier": "P1",
+      "lead_lag": null,
+      "unique": "smart-money-only"
+    }
+  ]
+}

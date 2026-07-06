@@ -106,6 +106,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 3. **The live Playbook** (link above) — interface + a real delivered alert deep-linking back to the matching card.
 4. **[`Strategy-Analysis.md`](Strategy-Analysis.md)** — the math底稿: adaptive baselines (EWMA/MAD), residual-vol z, t-thresholds, FDR, hysteresis, the scoring algebra, cold-start, alert fusion, and thesis-linked escalation (§7b).
 5. **[`Backtest-Report.md`](Backtest-Report.md)** — historical replay & precision-recall calibration on 29 symbols (Mag7 + 20 untuned stocks + BTC/LTC), 37,837 days, **+ an ablation (§8.5): volume gate −26% alert volume at equal precision; thesis adds ~24% unique P0 coverage; + an event-level study (§8.6): on 125 real earnings, an alert is 4.73× concentrated on earnings windows vs chance**.
+6. **[`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)** — anchors the evaluation on **111 real events** (earnings · insider/Form 4 · thesis break): 52% earnings coverage, **66 catches a price-only tracker would miss**, ~6% duplicates, +1-day median timing. The most direct proof the product routes attention to real events.
 6. **[`Evaluation-Matrix.md`](Evaluation-Matrix.md)** — one-glance honest status of every capability (Live / Verified / Backtested / Specced / Known-limitation) + tiered asset coverage. Read this to see exactly what's proven vs designed.
 
 ## Full file map

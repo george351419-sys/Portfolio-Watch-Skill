@@ -79,15 +79,16 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 
 ## Where this honestly falls short (and the next validation step)
 
-1. **Event-level evaluation — partly done (📊).** An earnings-aligned study now exists
-   (`backtest/pw-event-study.js`, Backtest-Report §8.6): on 125 real earnings events,
-   an alert is **4.73× more likely** to sit on an earnings window than a random day
-   (recall 0.48 — the other half are in-line non-events the product should stay quiet
-   on). This is genuine event-level evidence that alerts track catalysts, not price
-   noise. ⚠️ **Bounded to a recent ~24-month window** — historical earnings dates
-   aren't broadly available (earnings-calendar returns only ~6 recent quarters;
-   income-statements/dividends are gated), so a full multi-year, multi-event-type
-   (news/filings) study remains specced.
+1. **Event-level evaluation — done for the sourceable event types (📊).** A
+   **multi-type, event-aligned study** exists (`backtest/pw-event-aligned.js`,
+   [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)): **111 real events**
+   (42 earnings · 62 insider/Form 4 · 7 thesis break) → 52% earnings coverage, **66
+   catches a price-only tracker would miss**, ~6% duplicates, +1-day median timing;
+   plus an earnings concentration of **4.73×** vs chance (`pw-event-study.js`). Genuine
+   evidence alerts route attention to real events, not price noise. ⚠️ **Bounded to a
+   recent ~24-month window and to sourceable event types** (earnings / Form 4 / thesis)
+   — news, M&A, litigation, guidance, exec-departure endpoints aren't available at our
+   tier, so those remain out of scope; P0/P1 precision is a lower bound.
 2. **Per-source ablation** beyond price/volume/thesis (smart-money, options, mNAV,
    sentiment) needs point-in-time source histories to measure marginal precision.
 3. **Auto-intake** and **Telegram silent-update** are designed and partly verified but

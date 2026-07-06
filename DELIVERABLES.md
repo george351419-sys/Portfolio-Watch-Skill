@@ -71,6 +71,15 @@ Highlights: an **ablation** shows the volume gate cuts alert volume −26% at eq
 precision and thesis adds ~24% unique P0 coverage; **auto-intake and Telegram
 silent-update are designed but not live-demoed** (no linked account / needs a bot token).
 
+## Event-aligned evaluation
+
+Beyond price-continuation backtesting, the product is validated against **real events**
+([`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)): **111 events** (earnings ·
+insider/Form 4 · thesis break) → **52% earnings coverage**, **66 catches a price-only
+tracker would miss** (thesis-only + smart-money divergences), **4.73× alert concentration**
+on earnings vs chance, ~6% duplicates, +1-day median timing. Honestly bounded to a recent
+~24-month window and sourceable event types (news/M&A/litigation endpoints unavailable).
+
 ## Rigor & validation
 
 - **Math** — adaptive baselines (EWMA + robust MAD), residual-vol z, t-thresholds,
