@@ -43,5 +43,22 @@
         "label": "held betting the Fed cuts rates in December"
       }
     }
+  ],
+  "macro": [
+    {
+      "factor": "rates",
+      "token": "11567814642074862867749936284471148455273423515322037976014884555300111576108",
+      "label": "P(Fed cuts 25bps in Dec)",
+      "direction_up_is": "dovish",
+      "sensitive_sectors": [
+        "Homebuilders",
+        "Autos/EV",
+        "REITs",
+        "Real Estate",
+        "Regional Banks",
+        "Banks",
+        "Utilities"
+      ]
+    }
   ]
 }

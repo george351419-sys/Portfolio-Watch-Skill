@@ -180,8 +180,10 @@ to every holding when data exists; templates add asset-specific intelligence.
 - **Prediction markets (Polymarket) as a structured event signal** — for events
   with a *liquid* market (Fed decisions, elections, some catalysts), a sharp move
   in the event probability is a quantified, often-early re-pricing. Use as a
-  **catalyst-thesis reference** (§Thesis-Linked) or, for macro, a portfolio-level
-  context note. Gate hard on liquidity (spread/volume); it is *not* a price
+  **catalyst-thesis reference** (§Thesis-Linked) or a **macro-context overlay** (v1,
+  built): a sharp liquid move in P(Fed cut)/election is mapped by sector to the
+  rate/policy-sensitive holdings and surfaced as *one portfolio-level heads-up*,
+  never per-stock alerts. Gate hard on liquidity (spread/volume); it is *not* a price
   oracle. Coverage is lumpy (deep for macro/politics/sports, thin for single-name
   catalysts), so it enriches — it is not a core pillar.
 
@@ -595,9 +597,7 @@ then equal-weight impact, and prompt the user to add weights.
 
 ## Extensions (v2+)
 
-Deep fundamental-level theses (need per-KPI data) · Polymarket **macro-context
-overlay** (a sharp move in a liquid P(Fed cut)/election market → a portfolio-level
-heads-up on sensitive holdings) · multi-portfolio comparison · Altra-backed
+Deep fundamental-level theses (need per-KPI data) · multi-portfolio comparison · Altra-backed
 "what-if" · deeper on-chain / options microstructure.
 
 *(Proxy/leverage, relative-performance, hedge, **and catalyst (via Polymarket)**

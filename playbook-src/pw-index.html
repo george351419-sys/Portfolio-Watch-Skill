@@ -28,6 +28,10 @@
       .kpi-sub { font-size: 11px; color: var(--text-n5); margin-top: 4px; }
       .pos { color: var(--main-m3); } .neg { color: var(--main-m4); } .muted { color: var(--text-n5); }
       .note { margin-top: var(--spacing-s); font-size: 12px; color: var(--text-n7); padding: var(--spacing-xs) var(--spacing-s); background: var(--grey-g01); border-left: 2px solid var(--line-l2); border-radius: 4px; }
+      .macro-card { margin-top: var(--spacing-s); border-left: 3px solid #2563eb; }
+      .macro-h { font-size: 11px; font-weight: 500; color: #2563eb; letter-spacing: 0.03em; text-transform: uppercase; }
+      .macro-note { font-size: 13px; color: var(--text-n9); margin-top: 4px; line-height: 1.5; }
+      .macro-sub { font-size: 11px; color: var(--text-n5); margin-top: 4px; }
       .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
       .t-P0 { background: rgba(220,38,38,0.12); color: var(--main-m4); }
       .t-P1 { background: rgba(217,119,6,0.14); color: #b45309; }
@@ -95,6 +99,7 @@
         <div class="sec-title">Portfolio · <span id="asof">…</span></div>
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
+        <div id="macro"></div>
 
         <div class="sec-title">Monitored set · add or remove any ticker</div>
         <div class="card">
@@ -160,7 +165,7 @@
       var USER = "george351419";
       var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
       var TH = { surface: 2.0, push: 2.5, force: 3.5 };
-      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [] };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [] };
 
       function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
       function client() { return new AlvaToolkit.AlvaClient(cfg()); }
@@ -239,6 +244,15 @@
           var tags = ""; if (h.near_52w_high) tags += '<span class="tag52">52w high</span>'; if (h.near_52w_low) tags += '<span class="tag52">52w low</span>';
           var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
           return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + "</div>";
+        }).join("");
+      }
+      function renderMacro() {
+        var el = document.getElementById("macro");
+        if (!STATE.macro || !STATE.macro.length) { el.innerHTML = ""; return; }
+        el.innerHTML = STATE.macro.map(function (m) {
+          return '<div class="card macro-card"><div class="macro-h">Macro context · prediction markets · portfolio-level, not a per-stock alert</div>' +
+            '<div class="macro-note">' + esc(m.note) + "</div>" +
+            '<div class="macro-sub">Now ' + m.prob_now_pct + "% · move " + (m.change_pct >= 0 ? "+" : "") + m.change_pct + "pts (" + Number(m.z).toFixed(1) + "σ) · exposure " + m.exposure_pct + "% (" + esc(m.holdings || "—") + ")</div></div>";
         }).join("");
       }
       function renderLens() {
@@ -332,8 +346,9 @@
           STATE.monitored = STATE.holdings.map(function (h) { return h.symbol; });
           flat(await readJson(FEED + "signals/items/@last/12")).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
           flat(await readJson(FEED + "universe/rows/@last/40")).forEach(function (u) { STATE.universe[u.symbol] = u; });
+          try { STATE.macro = flat(await readJson(FEED + "macro/rows/@last/4")); } catch (e) { STATE.macro = []; }
           renderOverview(STATE.overview); syncLabels(); wireControls();
-          renderSignals(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
+          renderSignals(); renderMacro(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
           if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
           setTimeout(deepLinkScroll, 150);
         } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }

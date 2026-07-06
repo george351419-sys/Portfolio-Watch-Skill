@@ -32,6 +32,13 @@ async function loadThesis() {
     return m;
   } catch (e) { return { MSTR: { ref: "BTC", refType: "crypto", type: "leverage", label: "leveraged BTC play" } }; }
 }
+// macro-context overlay: liquid macro markets → portfolio-level heads-up (not per-stock alerts)
+async function loadMacro() {
+  try {
+    const raw = await alfs.readFile("/alva/home/" + env.username + "/feeds/pw-config/v1/holdings.json");
+    return JSON.parse(String(raw)).macro || [];
+  } catch (e) { return []; }
+}
 
 async function getJson(url) {
   const r = await http.fetch(url, H);
@@ -89,6 +96,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
 
 (async () => {
   THESIS = await loadThesis();
+  const MACRO = await loadMacro();
   const profRaw = await alfs.readFile("/alva/home/" + USER + "/feeds/pw-profile/v1/data/profile/holdings/@last/10");
   const profiles = JSON.parse(String(profRaw)).flatMap((r) => (r && r.items ? r.items : [r])).filter((r) => r && r.symbol);
   if (!profiles.length) throw new Error("no profile baseline");
@@ -154,6 +162,44 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       const strained = !broke && (relDrop >= 0.2 || zc <= -2);
       catalystMap[sym] = { label: t.label, ref: t.ref, pNow, pHigh, relDrop, z: zc, broke, strained };
     } catch (e) { /* skip on fetch/parse error */ }
+  }
+
+  // ---- macro-context overlay: a liquid macro market moving → portfolio-level heads-up ----
+  const macroRows = [];
+  for (const mk of MACRO) {
+    if (!mk.token) continue;
+    try {
+      const r = await http.fetch("https://clob.polymarket.com/prices-history?market=" + mk.token + "&interval=max&fidelity=1440", {});
+      const hj = JSON.parse(await r.text());
+      const pts = ((hj && hj.history) || []).filter((x) => x.t <= asof);
+      if (pts.length < 10) continue;
+      const P = pts.map((x) => x.p);
+      const pNow = P[P.length - 1];
+      const win = P.slice(Math.max(0, P.length - 14));  // recent ~2 weeks
+      const hi = Math.max(...win), lo = Math.min(...win);
+      const dropMove = pNow - hi, riseMove = pNow - lo;   // peak-to-now / trough-to-now
+      const change = Math.abs(dropMove) >= Math.abs(riseMove) ? dropMove : riseMove;
+      const pRef = Math.abs(dropMove) >= Math.abs(riseMove) ? hi : lo;
+      const dP = []; for (let i = 1; i < P.length; i++) dP.push(P[i] - P[i - 1]);
+      const md = dP.reduce((a, b) => a + b, 0) / dP.length;
+      const sig = Math.sqrt(dP.reduce((s, x) => s + (x - md) ** 2, 0) / (dP.length - 1)) || 0.01;
+      const zChg = change / (sig * Math.sqrt(10));
+      // material move gate (and it's a liquid market by construction)
+      if (Math.abs(change) < 0.08 && Math.abs(zChg) < 1.5) continue;
+      const secset = new Set((mk.sensitive_sectors || []).map((s) => s.toLowerCase()));
+      const hit = profiles.filter((p) => secset.has(String(p.sector || "").toLowerCase()));
+      const exposure = hit.reduce((a, p) => a + (p.weight || 0), 0);
+      const dir = change < 0 ? "fell" : "rose";
+      const impl = mk.factor === "rates" ? (change < 0 ? "less easing priced — a headwind for rate-sensitive holdings" : "more easing priced — a tailwind for rate-sensitive holdings") : "";
+      macroRows.push({
+        date: asof * 1000, factor: mk.factor, label: mk.label,
+        prob_now_pct: round(pNow * 100, 0), change_pct: round(change * 100, 0), z: round(zChg, 1),
+        exposure_pct: round(exposure * 100, 0), holdings: hit.map((p) => p.symbol).join(", "),
+        note: mk.label + " " + dir + " " + round(pRef * 100, 0) + "% → " + round(pNow * 100, 0) + "% this week (" +
+          (change >= 0 ? "+" : "") + round(change * 100, 0) + "pts, " + round(zChg, 1) + "σ) — " + impl +
+          (hit.length ? ": " + hit.map((p) => p.symbol).join(", ") + " (" + round(exposure * 100, 0) + "% of book)." : "."),
+      });
+    } catch (e) { /* skip */ }
   }
 
   // ---- per holding evaluation ----
@@ -351,6 +397,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("headline"), str("why"), str("deep_link")]) });
   feed.def("universe", { rows: makeDoc("Searchable Universe", "Per-ticker evidence for search/add", [
     str("symbol"), num("price"), num("ret_pct"), num("z"), num("residual_z"), num("rvol"), num("beta")]) });
+  feed.def("macro", { rows: makeDoc("Macro Context", "Portfolio-level prediction-market overlay", [
+    str("factor"), str("label"), num("prob_now_pct"), num("change_pct"), num("z"), num("exposure_pct"), str("holdings"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -385,6 +433,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     await ctx.self.ts("portfolio", "overview").append([overview]);
     await ctx.self.ts("holdings", "rows").append(holdings);
     if (universeRows.length) await ctx.self.ts("universe", "rows").append(universeRows);
+    if (macroRows.length) await ctx.self.ts("macro", "rows").append(macroRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.
