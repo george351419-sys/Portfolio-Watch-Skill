@@ -67,6 +67,20 @@ visible and adjustable — not a black box.
 
 ---
 
+## ✅ Does it actually work? — event-aligned proof
+
+Not "did price continue for 3 days" (which rewards momentum), but the product's real
+question: **when a real event happens, does it become a useful alert?** Anchored on
+**111 real events** (earnings · insider/Form 4 · thesis break), built programmatically
+from data endpoints — no cherry-picking.
+
+![Event-aligned evaluation — 111 real events](assets/fig7-event-aligned.png)
+
+**52% earnings covered** (the rest are in-line non-events it *should* skip), **66
+catches a price-only tracker would miss** (7 thesis-only + 59 smart-money divergences),
+**4.73× alert concentration** on earnings vs chance, ~6% duplicates, +1-day median
+timing. Full method & honest scope: [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md).
+
 ## 🧭 Methodology highlights — what makes it good (for adopters & remixers)
 
 The full spec is one pasteable file, [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md). The distinctive parts:

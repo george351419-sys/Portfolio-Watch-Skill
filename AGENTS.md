@@ -157,6 +157,24 @@ sentiment · mNAV valuation · daily digest. Table with live evidence: DELIVERAB
   auto-intake from the connected Alva Portfolio.
 - Demo/Live toggle; alerts delivered to Discord + web with deep links.
 
+## 8.5 Validation (how we know it works)
+
+Three complementary evidence layers — don't re-derive these, cite them:
+
+![Event-aligned evaluation — 111 real events](assets/fig7-event-aligned.png)
+
+- **Precision-recall backtest** (`Backtest-Report.md`) — 29 symbols, 37,837 days,
+  point-in-time. Calibrates the σ thresholds; proves reusability (untuned cohort ≈ Mag7).
+- **Ablation** (`backtest/pw-ablation.js`, §8.5) — the volume gate cuts alert volume
+  **−26% at equal precision**; thesis adds ~24% unique P0 coverage.
+- **Event-aligned evaluation** (`backtest/pw-event-aligned.js`, `Event-Aligned-Evaluation.md`)
+  — anchored on **111 real events** (earnings · insider/Form 4 · thesis break): 52%
+  earnings coverage, **66 catches a price-only tracker would miss**, 4.73× earnings
+  concentration, ~6% duplicates, +1-day timing. This is the strongest evidence the
+  product routes attention to real events, not price noise. Honest scope: recent
+  ~24-month window, sourceable event types only (news/M&A/litigation endpoints
+  unavailable). If you extend it, add event types as those endpoints become available.
+
 ## 9. How to extend or optimize (playbook for the next agent)
 
 1. **Read the source docs first** (harness rule): SKILL.md, One-Pager.md,
