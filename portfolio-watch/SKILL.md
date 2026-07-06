@@ -14,7 +14,7 @@ description: >-
   Output is monitoring and explanation, not investment advice.
 metadata:
   author: portfolio-watch-skill
-  version: v2.0.0
+  version: v2.1.0
   builds_on: alva
 ---
 
