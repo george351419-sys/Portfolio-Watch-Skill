@@ -87,11 +87,20 @@
       .formula { display: block; padding: 10px 12px; margin: 4px 0 14px; white-space: pre-wrap; line-height: 1.5; }
       .foot { margin-top: var(--spacing-xl); display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-n5); }
       .alva-watermark { opacity: 0.5; }
+      .wr-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: flex-start; justify-content: center; z-index: 50; padding: 40px 16px; }
+      .wr-overlay.pwsel { display: flex; }
+      .wr-modal { background: var(--b0-page); border: 0.5px solid var(--line-l3); border-radius: 14px; max-width: 560px; width: 100%; padding: var(--spacing-l, 20px); }
+      .wr-head { display: flex; align-items: baseline; gap: 10px; }
+      .wr-x { margin-left: auto; cursor: pointer; color: var(--text-n5); font-size: 18px; }
+      .wr-sec { font-size: 11px; font-weight: 500; color: var(--text-n5); text-transform: uppercase; letter-spacing: 0.03em; margin: 14px 0 4px; }
+      .wr-line { font-size: 13px; color: var(--text-n9); line-height: 1.5; }
+      .hld-card { cursor: pointer; }
       .empty { font-size: 13px; color: var(--text-n5); padding: var(--spacing-m); text-align: center; }
     </style>
   </head>
   <body>
     <div class="playbook-container">
+      <div class="wr-overlay" id="wrOverlay"><div class="wr-modal" id="wrModal"></div></div>
       <div class="pw-tabs" id="tabs">
         <span class="pw-tab pwsel" data-tab="watch">Watch</span>
         <span class="pw-tab" data-tab="theory">Theory</span>
@@ -284,7 +293,7 @@
         document.getElementById("ctrlSummary").innerHTML = "At these thresholds: <b>" + (p0 + p1) + "</b> would push (" + p0 + " P0 · " + p1 + " P1), " + p2 + " surface only.";
         var kc = document.getElementById("kCounts"); if (kc) kc.innerHTML = p0 + " P0 · " + p1 + " P1 · " + p2 + " P2";
         var ka = document.getElementById("kAttn"); if (ka) ka.textContent = p0 + p1;
-        renderHoldings();
+        renderHoldings(); wireWarRoom();
       }
       function sbar(z) { var c = z >= 0 ? "var(--main-m3)" : "var(--main-m4)"; var mag = Math.min(Math.abs(z) / 3, 1) * 50; var st = z >= 0 ? "left:50%;width:" + mag + "%;background:" + c : "right:50%;width:" + mag + "%;background:" + c; return '<div class="sbar"><div class="sbar-mid"></div><div class="sbar-fill" style="' + st + '"></div></div>'; }
       function cryptoLine(sym) {
@@ -314,7 +323,7 @@
           var badge = tier && tier !== "—" ? '<span class="badge t-' + (isT ? "THESIS" : tier) + '">' + (isT ? "THESIS" : tier) + "</span>" : "";
           var tags = ""; if (h.near_52w_high) tags += '<span class="tag52">52w high</span>'; if (h.near_52w_low) tags += '<span class="tag52">52w low</span>';
           var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
-          return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + mnavLine(h.symbol) + sentiLine(h.symbol) + optLine(h.symbol) + cryptoLine(h.symbol) + "</div>";
+          return '<div class="card hld-card" data-warroom="' + esc(h.symbol) + '"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + mnavLine(h.symbol) + sentiLine(h.symbol) + optLine(h.symbol) + cryptoLine(h.symbol) + "</div>";
         }).join("");
       }
       function renderDigest() {
@@ -340,6 +349,28 @@
           STATE.smartmoney.map(function (m) {
             return '<div class="sm-row"><b>' + esc(m.symbol) + "</b> — " + esc(m.note) + "</div>";
           }).join("") + '<div class="macro-sub">Discretionary Form-4 buys/sells (10b5-1 excluded). Insider disclosure lags ~2 days.</div></div>';
+      }
+      function openWarRoom(sym) {
+        var h = STATE.holdings.filter(function (x){return x.symbol===sym;})[0]; if(!h) return;
+        var srv = STATE.signalsBySym[sym], o = STATE.optionsBySym[sym], c = STATE.cryptoByHolding[sym], se = STATE.sentimentBySym[sym], mn = STATE.mnavBySym[sym];
+        var L = [];
+        L.push('<div class="wr-head"><span class="sig-sym">'+esc(sym)+'</span><span class="hld-name">'+esc(h.name)+'</span><span class="hld-price muted">$'+Number(h.price).toFixed(2)+'</span><span class="wr-x" id="wrClose">✕</span></div>');
+        L.push('<div class="wr-sec">Price</div><div class="wr-line">'+pct(h.ret_pct)+' today · '+Number(h.z).toFixed(1)+'σ total · idiosyncratic '+Number(h.residual_z).toFixed(1)+'σ · RVOL '+(h.rvol==null?"—":Number(h.rvol).toFixed(1)+"×")+' · β '+h.beta+' · weight '+Math.round(h.weight*100)+'% · drawdown '+pct(h.dd_from_high_pct)+'</div>');
+        if (h.thesis_label) L.push('<div class="wr-sec">Thesis</div><div class="wr-line">'+esc(h.thesis_label)+' — <b>'+esc(h.thesis_state||"")+'</b>'+(srv&&srv.thesis_break?'. '+esc(srv.why||""):"")+'</div>');
+        if (mn) L.push('<div class="wr-sec">Valuation (mNAV)</div><div class="wr-line">'+esc(mn.note)+'</div>');
+        if (se) L.push('<div class="wr-sec">KOL sentiment</div><div class="wr-line">'+esc(se.note)+'</div>');
+        if (o) L.push('<div class="wr-sec">Options-implied</div><div class="wr-line">expected move ±'+o.expected_move_pct+'% by '+o.days+'d · IV '+o.atm_iv_pct+'% · skew '+o.skew_pts+'pt'+(o.state!=="normal"?" · <b>"+esc(o.state)+"</b>":"")+(o.note?". "+esc(o.note):"")+'</div>');
+        if (c) L.push('<div class="wr-sec">Crypto backdrop</div><div class="wr-line">'+esc(c.ref)+' perp funding '+c.funding_annual_pct+'%/yr · OI '+(c.oi_change_pct>=0?"+":"")+c.oi_change_pct+'%'+(c.state!=="normal"?" · <b>"+esc(c.state)+"</b>":"")+'</div>');
+        var sm = (STATE.smartmoney||[]).filter(function(x){return x.symbol===sym;})[0];
+        if (sm) L.push('<div class="wr-sec">Smart money</div><div class="wr-line">'+esc(sm.note)+'</div>');
+        document.getElementById("wrModal").innerHTML = L.join("");
+        document.getElementById("wrOverlay").classList.add("pwsel");
+        document.getElementById("wrClose").addEventListener("click", closeWarRoom);
+      }
+      function closeWarRoom(){ document.getElementById("wrOverlay").classList.remove("pwsel"); }
+      function wireWarRoom(){
+        document.querySelectorAll("[data-warroom]").forEach(function(n){ n.addEventListener("click", function(){ openWarRoom(n.getAttribute("data-warroom")); }); });
+        document.getElementById("wrOverlay").addEventListener("click", function(e){ if(e.target.id==="wrOverlay") closeWarRoom(); });
       }
       function renderLens() {
         var o = STATE.overview; var top = STATE.holdings.slice().sort(function (a, b) { return b.weight - a.weight; })[0];
