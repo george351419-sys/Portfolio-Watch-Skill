@@ -198,31 +198,22 @@ reference implementation).*
 
 # 中文
 
-*完整思路见英文版；此处是压缩版，细节均可点链接跳转。*
+*精简版；英文为完整版，配图见英文版/README，细节点链接跳转。*
 
 ## 一句话赌注
-一个好的 Portfolio Watch Skill，交付的不是"数据+图表"，而是一层**判断力**：对一个**从没见过的持仓**，把真信号从噪音里择出来，只在值得时才打扰用户。
+好的 Portfolio Watch Skill 交付的不是"数据+图表"，而是一层**判断力**：对**从没见过的持仓**，把真信号从噪音里择出来，只在值得时才打扰用户。
 
 ## 核心思想：一切阈值都相对
-NVDA 跌 3% 是日常，可口可乐跌 3% 是新闻。所以**没有写死的百分比**——每次异动都对照**该股自己的自适应基线**（EWMA/MAD 波动、β、残差波动 σ_ε）来判断。这是"可用于任意组合"的唯一引擎。
-
-**三条信念：** ① 干掉固定百分比告警（那是伪装成监控的噪音）；② **信噪比即产品**——守护用户注意力，十条相关告警 β 上卷成一条、小仓位静默、一串事实融合成一张演进卡；③ **Alva 原生**，全由平台原语拼装、无新基建。
-
-**四个问题→四个判断：** 盯哪些维度（按"投资者为何在意"分四层，组合层首屏）· 什么算异动（分母用**残差波动 σ_ε**、非总波动）· 什么是噪音（β 上卷 + BH-FDR + 滞回）· 怎么排序（按**对你钱的影响**=幅度×权重，P0/P1/P2、每日 P0≤4）。数学推导、冷启动、融合降噪详见 [`Strategy-Analysis.md`](Strategy-Analysis.md)。
+NVDA 跌 3% 是日常，可口可乐跌 3% 是新闻——所以**没有写死的百分比**，每次异动都对照**该股自己的自适应基线**（EWMA/MAD、β、残差波动 σ_ε）判断。这是"可用于任意组合"的唯一引擎。四题的答案——盯哪些维度、什么算异动（分母用**残差 σ_ε** 而非总波动）、什么是噪音（β 上卷 + BH-FDR + 滞回）、怎么排序（按**对你钱的影响**=幅度×权重）——连同冷启动、融合降噪、数学推导，详见 [`Strategy-Analysis.md`](Strategy-Analysis.md)。
 
 ## 标志性能力：盯的是"假设"，不只是市场
-最高价值的问题是"**我当初买它的理由还成立吗**"。用户说"我把 MSTR 当 BTC 杠杆拿"，Skill 就监控这个不变量（应放大跟随 BTC）。当 BTC 大涨而 MSTR 反跌——不是噪音，是**买入逻辑破裂**，直接**越级 P0**。它复用同一套残差引擎，只把参照物从大盘换成 thesis 指定资产（BTC/SMH/QQQ/SPY 皆可）；用户明说或对系统**自动建议一键确认**即可。
+最高价值的问题是"**当初买它的理由还成立吗**"。把 MSTR 当"BTC 杠杆版"持有，当 BTC 大涨而 MSTR 反跌，就是**买入逻辑破裂**→直接**越级 P0**（真实数据：2024-11-21 BTC +4.3% 而 MSTR −16.2%，−4.8σ）。它复用同一套残差引擎、只把参照物从大盘换成 thesis 资产（BTC/SMH/QQQ/SPY 皆可）；用户明说或对系统**自动建议一键确认**即可。见 [`SKILL.md` §Thesis-Linked](portfolio-watch/SKILL.md)。
 
-![thesis 破裂 · Alva 上真实数据](assets/thesis-break-demo.png)
-*2024-11-21：BTC +4.3% 本应带动 MSTR ~+6%，实际 −16.2%，对杠杆假设 −4.8σ 破裂 → P0，点开直达卡片。详见 [`SKILL.md` §Thesis-Linked](portfolio-watch/SKILL.md) · `thesis-monitor.js`。*
-
-## 做出来证明它是真的（三层验证）
-- **Live**：Alva 上真 build（界面+告警），告警**端到端投递到 Discord/web**（status=sent、含深链）。
-- **回测/消融**：残差修正把 AAPL 从 −2.6σ 抬到 **−4.1σ（P1→P0）**；消融显示成交量确认层 **−26% 告警量、precision 不降**。见 [`Backtest-Report.md`](Backtest-Report.md)。
-- **事件对齐**（最贴近产品价值）：**111 个真实事件**上，告警落在财报窗口是随机日的 **4.73 倍**，另有 **66 个非价格事件由非价格维度呈现**。见 [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)。
+## 三层验证
+**Live**（Alva 真 build，告警投递 Discord/web 已验证）· **回测/消融**（残差修正把 AAPL 抬到 −4.1σ、P1→P0；成交量确认层 −26% 告警量、precision 不降）· **事件对齐**（111 个真实事件，告警落在财报窗口是随机日的 **4.73 倍**，另有 **66 个非价格事件由非价格维度呈现**）。详见 [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md) 与 [`Backtest-Report.md`](Backtest-Report.md)。
 
 ## 诚实边界
-Demo 为 daily cadence；真实券商 auto-intake 与 Telegram 静默覆盖已设计/wired、但因缺账户/token 未端到端演示；news/M&A 等事件端点在当前 tier 不可得。逐能力状态（Live/Verified/Backtested/Specced）见 [`Evaluation-Matrix.md`](Evaluation-Matrix.md)。
+真实券商 auto-intake 与 Telegram 静默覆盖已设计/wired，但缺账户/token 未端到端演示；news/M&A 等事件端点在当前 tier 不可得。逐能力状态（Live/Verified/Backtested/Specced）见 [`Evaluation-Matrix.md`](Evaluation-Matrix.md)。
 
 ---
-*交付物：[`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) · [Live Playbook](https://alva.ai/u/george351419/playbooks/portfolio-watch) · 本 One-Pager。验证：[`Backtest-Report.md`](Backtest-Report.md) · [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md) · [`Evaluation-Matrix.md`](Evaluation-Matrix.md)。*
+*交付：[`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) · [Live Playbook](https://alva.ai/u/george351419/playbooks/portfolio-watch) · 本 One-Pager。*
