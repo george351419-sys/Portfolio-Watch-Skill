@@ -76,7 +76,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 ## 🔁 Adopt or remix this
 
-- **Use the Skill on your own portfolio:** paste [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) into the Alva chat (it's a single, self-contained file) and say *"watch my NVDA, TSLA, AAPL."* The watched set is a user-owned config you edit anytime (by chat or in the UI).
+- **Use the Skill on your own portfolio:** paste [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) into the Alva chat (it's a single, self-contained file). If you've **linked a brokerage/crypto account** to Alva's Portfolio module, just say *"watch my portfolio"* — it reads your real positions (`alva portfolio summary`, TREX + SnapTrade) and monitors them at true weights, zero typing. No linked account? Say *"watch my NVDA, TSLA, AAPL."* Either way the watched set is a user-owned config you edit anytime (by chat or in the UI), and *"sync my portfolio"* diffs in new trades.
 - **Remix the Playbook:** `alva remix` the live Playbook, or lift the feed/UI sources from [`playbook-src/`](playbook-src/) (`pw-profile.js`, `pw-watch.js`, `pw-index.html`, `updateWatchlist.js`, `holdings.json`).
 - **Reuse a single capability:** the verified reference modules are standalone — `thesis-monitor.js`, `catalyst-thesis.js`, `alert-fusion.js`, `smart-money.js`, `options-signal.js`, `crypto-micro.js`.
 

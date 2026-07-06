@@ -85,6 +85,18 @@ each verified on real data. Live feed/UI sources in [`playbook-src/`](playbook-s
   to whatever `active_channel` the owner connects), so Telegram/Slack work the same way
   with no code change.
 
+## Auto-intake from the connected Portfolio
+
+Alva has a native **Portfolio** module (linked brokerage/crypto accounts, TREX +
+SnapTrade). The Skill uses it as the **preferred zero-entry intake**: *"watch my
+portfolio"* → `alva portfolio summary` reads real positions and seeds the watched
+set at **true market-value weights** (exact ranking, not equal-weight); *"sync my
+portfolio"* diffs in new trades (`activities`). This runs on the Agent under the
+user's own identity — a headless feed can't impersonate the user, so refresh is
+user-triggered, not a silent background pull. Wired into `SKILL.md` §Step 1;
+falls back to manual/chat/UI intake when no account is linked. *(Not live-demoed:
+the demo account has no linked account — `alva portfolio accounts` → `[]`.)*
+
 ## Honest gaps
 - **Demo pin:** the Playbook is pinned to the 2024-11-21 session so the price/catalyst
   thesis breaks show; positioning signals (insider/options/crypto/sentiment/mNAV) use

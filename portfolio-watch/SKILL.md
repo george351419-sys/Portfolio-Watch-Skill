@@ -65,6 +65,26 @@ for portfolio-level math (weights, drawdown, correlation, contribution),
 Extract: tickers/assets, shares or notional, weights, cost basis, watch style,
 alert channel, timezone, time horizon.
 
+**Preferred zero-entry path — pull the user's real portfolio.** Alva has a native
+Portfolio module (connected brokerage / crypto accounts across TREX + SnapTrade).
+If the user says *"watch my portfolio"* and has a linked account, do **not** ask
+them to type tickers — read the positions directly and populate the watched set:
+
+1. `alva portfolio accounts` → list connected accounts (`trex:…` / `snaptrade:…`).
+   If several, ask which (or watch all, unioned).
+2. `alva portfolio summary --account-id <id>` → holdings + balance. Map each
+   position to `{symbol, name, weight (from market value / total), sector}` and
+   write it into the watched-set config (below). Weights come **free** from real
+   balances, so ranking is exact instead of equal-weight.
+3. Confirm the resolved list back to the user in one line before monitoring; then
+   the feed auto-profiles every name (§Step 2) and thesis prompts follow.
+4. **Sync on request** — "sync my portfolio" re-reads accounts and diffs against
+   the config (new buys added, full exits removed); `alva portfolio activities`
+   gives the recent trade trail. This runs on the Agent under the user's own
+   identity — a headless feed can't impersonate the user, so refresh is
+   user-triggered (or via a stored restricted token), never a silent background
+   pull. If **no** account is linked, fall back to the manual intake below.
+
 Defaults when missing:
 - **Weights** — equal weight; label portfolio-impact estimates as approximate.
   Weights affect ranking only, never whether an anomaly is detected.
@@ -88,8 +108,9 @@ default market model.
 
 The list of monitored tickers is **not hardcoded** — it's a config the user owns
 (e.g. `~/feeds/pw-config/v1/holdings.json`: `[{symbol, name, weight, sector,
-thesis?}]`). The feeds **read it at runtime**, so changing what's watched never
-needs a code change:
+thesis?}]`). It can be **seeded automatically from the connected Alva Portfolio**
+(§Step 1 zero-entry path) or filled by hand. The feeds **read it at runtime**, so
+changing what's watched never needs a code change:
 
 - **Add / remove anytime — two ways, same config.** (a) Talk to the Agent ("also
   watch COIN", "stop watching TSLA"); it edits the config. (b) Do it **in the
