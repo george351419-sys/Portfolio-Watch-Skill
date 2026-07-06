@@ -1,0 +1,353 @@
+{
+  "config": {
+    "cohort": [
+      "NVDA",
+      "AAPL",
+      "MSFT",
+      "AMZN",
+      "GOOGL",
+      "META",
+      "TSLA",
+      "JPM",
+      "GS",
+      "XOM",
+      "CVX",
+      "JNJ",
+      "PFE",
+      "UNH",
+      "WMT",
+      "HD",
+      "KO",
+      "PG",
+      "DIS",
+      "NFLX",
+      "BA",
+      "CAT",
+      "NKE",
+      "V",
+      "CRM",
+      "INTC",
+      "AMD"
+    ],
+    "n_symbols": 27,
+    "window_days": 400,
+    "lookback": 60,
+    "vol_window": 20,
+    "forward": 3,
+    "k_cont": 1,
+    "threshold": 2.5,
+    "rvol_min": 1.5,
+    "ground_truth": "forward T+1..T+3 same-direction cumulative move >= 1.0*trailing_sigma",
+    "seed": 20260706
+  },
+  "pooled_n_days": 10800,
+  "base_rate": 0.262,
+  "ablation": [
+    {
+      "layer": "L0 total-\u03c3 \u2265 2.5 (naive)",
+      "alerts_raw": 305,
+      "alerts_per_1000d": 28.2,
+      "precision": 0.354,
+      "lift": 1.35,
+      "dup_rate": 0.056,
+      "alerts_after_fusion": 288,
+      "fusion_reduction_pct": 6
+    },
+    {
+      "layer": "L1 residual-\u03c3 \u2265 2.5 (idiosyncratic gate)",
+      "alerts_raw": 338,
+      "alerts_per_1000d": 31.3,
+      "precision": 0.358,
+      "lift": 1.37,
+      "dup_rate": 0.077,
+      "alerts_after_fusion": 312,
+      "fusion_reduction_pct": 8
+    },
+    {
+      "layer": "L2 + volume confirm (rvol \u2265 1.5)",
+      "alerts_raw": 252,
+      "alerts_per_1000d": 23.3,
+      "precision": 0.353,
+      "lift": 1.35,
+      "dup_rate": 0.075,
+      "alerts_after_fusion": 233,
+      "fusion_reduction_pct": 8
+    },
+    {
+      "layer": "L3 + fusion (see alerts_after_fusion)",
+      "alerts_raw": 252,
+      "alerts_per_1000d": 23.3,
+      "precision": 0.353,
+      "lift": 1.35,
+      "dup_rate": 0.075,
+      "alerts_after_fusion": 233,
+      "fusion_reduction_pct": 8
+    }
+  ],
+  "note": "L3 = L2 with consecutive same-symbol flags fused; read alerts_after_fusion & fusion_reduction_pct.",
+  "threshold_sweep": [
+    {
+      "thr": 1.5,
+      "L1_residual": {
+        "layer": "L1",
+        "alerts_raw": 1263,
+        "alerts_per_1000d": 116.9,
+        "precision": 0.291,
+        "lift": 1.11,
+        "dup_rate": 0.179,
+        "alerts_after_fusion": 1037,
+        "fusion_reduction_pct": 18
+      },
+      "L2_resid_vol": {
+        "layer": "L2",
+        "alerts_raw": 469,
+        "alerts_per_1000d": 43.4,
+        "precision": 0.292,
+        "lift": 1.12,
+        "dup_rate": 0.145,
+        "alerts_after_fusion": 401,
+        "fusion_reduction_pct": 14
+      }
+    },
+    {
+      "thr": 2,
+      "L1_residual": {
+        "layer": "L1",
+        "alerts_raw": 631,
+        "alerts_per_1000d": 58.4,
+        "precision": 0.298,
+        "lift": 1.14,
+        "dup_rate": 0.117,
+        "alerts_after_fusion": 557,
+        "fusion_reduction_pct": 12
+      },
+      "L2_resid_vol": {
+        "layer": "L2",
+        "alerts_raw": 345,
+        "alerts_per_1000d": 31.9,
+        "precision": 0.31,
+        "lift": 1.19,
+        "dup_rate": 0.104,
+        "alerts_after_fusion": 309,
+        "fusion_reduction_pct": 10
+      }
+    },
+    {
+      "thr": 2.5,
+      "L1_residual": {
+        "layer": "L1",
+        "alerts_raw": 338,
+        "alerts_per_1000d": 31.3,
+        "precision": 0.358,
+        "lift": 1.37,
+        "dup_rate": 0.077,
+        "alerts_after_fusion": 312,
+        "fusion_reduction_pct": 8
+      },
+      "L2_resid_vol": {
+        "layer": "L2",
+        "alerts_raw": 252,
+        "alerts_per_1000d": 23.3,
+        "precision": 0.353,
+        "lift": 1.35,
+        "dup_rate": 0.075,
+        "alerts_after_fusion": 233,
+        "fusion_reduction_pct": 8
+      }
+    },
+    {
+      "thr": 3,
+      "L1_residual": {
+        "layer": "L1",
+        "alerts_raw": 203,
+        "alerts_per_1000d": 18.8,
+        "precision": 0.379,
+        "lift": 1.45,
+        "dup_rate": 0.054,
+        "alerts_after_fusion": 192,
+        "fusion_reduction_pct": 5
+      },
+      "L2_resid_vol": {
+        "layer": "L2",
+        "alerts_raw": 171,
+        "alerts_per_1000d": 15.8,
+        "precision": 0.386,
+        "lift": 1.48,
+        "dup_rate": 0.058,
+        "alerts_after_fusion": 161,
+        "fusion_reduction_pct": 6
+      }
+    },
+    {
+      "thr": 3.5,
+      "L1_residual": {
+        "layer": "L1",
+        "alerts_raw": 131,
+        "alerts_per_1000d": 12.1,
+        "precision": 0.397,
+        "lift": 1.52,
+        "dup_rate": 0.015,
+        "alerts_after_fusion": 129,
+        "fusion_reduction_pct": 2
+      },
+      "L2_resid_vol": {
+        "layer": "L2",
+        "alerts_raw": 120,
+        "alerts_per_1000d": 11.1,
+        "precision": 0.383,
+        "lift": 1.46,
+        "dup_rate": 0.017,
+        "alerts_after_fusion": 118,
+        "fusion_reduction_pct": 2
+      }
+    }
+  ],
+  "thesis_eval": {
+    "symbol": "MSTR",
+    "benchmark_thesis": "BTC",
+    "benchmark_market": "SPY",
+    "n_days": 1264,
+    "thesis_flags": 37,
+    "thesis_only_not_market": 9,
+    "both": 28,
+    "market_only": 12,
+    "reading": "thesis_only = days a leverage-thesis break is large vs BTC but the market-\u03b2 model would NOT have flagged it \u2192 unique P0 coverage the price-only pipeline misses."
+  },
+  "per_symbol_windows": [
+    {
+      "symbol": "NVDA",
+      "window": "2021-10-25 \u2192 2023-05-26",
+      "n_days": 400
+    },
+    {
+      "symbol": "AAPL",
+      "window": "2022-12-05 \u2192 2024-07-10",
+      "n_days": 400
+    },
+    {
+      "symbol": "MSFT",
+      "window": "2024-03-13 \u2192 2025-10-15",
+      "n_days": 400
+    },
+    {
+      "symbol": "AMZN",
+      "window": "2022-07-11 \u2192 2024-02-09",
+      "n_days": 400
+    },
+    {
+      "symbol": "GOOGL",
+      "window": "2024-03-27 \u2192 2025-10-29",
+      "n_days": 400
+    },
+    {
+      "symbol": "META",
+      "window": "2023-09-20 \u2192 2025-04-24",
+      "n_days": 400
+    },
+    {
+      "symbol": "TSLA",
+      "window": "2023-10-24 \u2192 2025-05-29",
+      "n_days": 400
+    },
+    {
+      "symbol": "JPM",
+      "window": "2022-06-23 \u2192 2024-01-25",
+      "n_days": 400
+    },
+    {
+      "symbol": "GS",
+      "window": "2021-08-31 \u2192 2023-04-03",
+      "n_days": 400
+    },
+    {
+      "symbol": "XOM",
+      "window": "2023-12-18 \u2192 2025-07-24",
+      "n_days": 400
+    },
+    {
+      "symbol": "CVX",
+      "window": "2023-03-31 \u2192 2024-10-31",
+      "n_days": 400
+    },
+    {
+      "symbol": "JNJ",
+      "window": "2022-02-07 \u2192 2023-09-11",
+      "n_days": 400
+    },
+    {
+      "symbol": "PFE",
+      "window": "2024-09-11 \u2192 2026-04-16",
+      "n_days": 400
+    },
+    {
+      "symbol": "UNH",
+      "window": "2023-06-09 \u2192 2025-01-13",
+      "n_days": 400
+    },
+    {
+      "symbol": "WMT",
+      "window": "2022-02-01 \u2192 2023-09-05",
+      "n_days": 400
+    },
+    {
+      "symbol": "HD",
+      "window": "2024-10-03 \u2192 2026-05-08",
+      "n_days": 400
+    },
+    {
+      "symbol": "KO",
+      "window": "2021-10-07 \u2192 2023-05-10",
+      "n_days": 400
+    },
+    {
+      "symbol": "PG",
+      "window": "2024-10-30 \u2192 2026-06-05",
+      "n_days": 400
+    },
+    {
+      "symbol": "DIS",
+      "window": "2022-12-30 \u2192 2024-08-05",
+      "n_days": 400
+    },
+    {
+      "symbol": "NFLX",
+      "window": "2022-06-30 \u2192 2024-02-01",
+      "n_days": 400
+    },
+    {
+      "symbol": "BA",
+      "window": "2024-11-05 \u2192 2026-06-11",
+      "n_days": 400
+    },
+    {
+      "symbol": "CAT",
+      "window": "2022-05-11 \u2192 2023-12-12",
+      "n_days": 400
+    },
+    {
+      "symbol": "NKE",
+      "window": "2022-02-03 \u2192 2023-09-07",
+      "n_days": 400
+    },
+    {
+      "symbol": "V",
+      "window": "2022-11-08 \u2192 2024-06-12",
+      "n_days": 400
+    },
+    {
+      "symbol": "CRM",
+      "window": "2023-09-11 \u2192 2025-04-14",
+      "n_days": 400
+    },
+    {
+      "symbol": "INTC",
+      "window": "2024-07-12 \u2192 2026-02-13",
+      "n_days": 400
+    },
+    {
+      "symbol": "AMD",
+      "window": "2023-07-20 \u2192 2025-02-21",
+      "n_days": 400
+    }
+  ]
+}
