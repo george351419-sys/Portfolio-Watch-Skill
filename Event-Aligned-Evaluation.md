@@ -68,6 +68,7 @@ raw result: [`backtest/results-event-aligned.json`](backtest/results-event-align
 
 Forward-price continuation rewards momentum the product deliberately suppresses. This
 evaluation instead asks the product's actual question — *when a real event happens, does
-attention get routed correctly?* — and answers it with real events: **material catalysts
-are covered and concentrated; non-events are skipped; the extra signal dimensions catch
-66 events price alone would miss; and alerts stay de-duplicated and timely.**
+attention get routed correctly?* — and answers it with real events: **earnings-linked
+alerts are concentrated around real catalysts; non-events are skipped; non-price
+dimensions surface 66 additional events a price-only tracker cannot represent; and
+alerts stay de-duplicated and timely.**
