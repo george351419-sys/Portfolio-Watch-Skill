@@ -79,11 +79,15 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 
 ## Where this honestly falls short (and the next validation step)
 
-1. **Event-level evaluation.** The backtest ground truth is forward price
-   continuation — it proves the price/volume/thesis layers carry signal and quantifies
-   noise reduction, but it is **not** a news/earnings/filing-aligned event study.
-   Historical earnings dates aren't reliably available via the current endpoints, so
-   this is specced, not done. It's the single highest-value next experiment.
+1. **Event-level evaluation — partly done (📊).** An earnings-aligned study now exists
+   (`backtest/pw-event-study.js`, Backtest-Report §8.6): on 125 real earnings events,
+   an alert is **4.73× more likely** to sit on an earnings window than a random day
+   (recall 0.48 — the other half are in-line non-events the product should stay quiet
+   on). This is genuine event-level evidence that alerts track catalysts, not price
+   noise. ⚠️ **Bounded to a recent ~24-month window** — historical earnings dates
+   aren't broadly available (earnings-calendar returns only ~6 recent quarters;
+   income-statements/dividends are gated), so a full multi-year, multi-event-type
+   (news/filings) study remains specced.
 2. **Per-source ablation** beyond price/volume/thesis (smart-money, options, mNAV,
    sentiment) needs point-in-time source histories to measure marginal precision.
 3. **Auto-intake** and **Telegram silent-update** are designed and partly verified but

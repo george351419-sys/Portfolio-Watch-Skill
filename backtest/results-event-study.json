@@ -1,0 +1,103 @@
+{
+  "scope": {
+    "symbols": 27,
+    "window": "~last 24 months (where earnings dates exist)",
+    "detection": "|residual-vol z| >= 2.5 within earnings \u00b11 trading day",
+    "note": "point-in-time; SPY-benchmark residual"
+  },
+  "earnings_events": 125,
+  "earnings_recall": 0.48,
+  "big_surprise_recall": 0.46,
+  "alert_concentration": {
+    "p_event_window_given_alert": 0.144,
+    "base_rate_event_window": 0.03,
+    "lift": 4.73,
+    "reading": "an alert is Nx more likely to sit on an earnings window than a random day \u2014 evidence alerts track real catalysts, not just price noise"
+  },
+  "sample_events": [
+    {
+      "sym": "INTC",
+      "date": "2026-04-23",
+      "surprise": 7400,
+      "peak_z": 6.49,
+      "detected": true
+    },
+    {
+      "sym": "BA",
+      "date": "2026-01-27",
+      "surprise": 2362.1,
+      "peak_z": 0.93,
+      "detected": false
+    },
+    {
+      "sym": "INTC",
+      "date": "2025-04-24",
+      "surprise": 1811.8,
+      "peak_z": 1.78,
+      "detected": false
+    },
+    {
+      "sym": "INTC",
+      "date": "2025-07-24",
+      "surprise": 929.2,
+      "peak_z": 4.02,
+      "detected": true
+    },
+    {
+      "sym": "NKE",
+      "date": "2026-06-30",
+      "surprise": 554.5,
+      "peak_z": 2.77,
+      "detected": true
+    },
+    {
+      "sym": "BA",
+      "date": "2025-01-28",
+      "surprise": 268.8,
+      "peak_z": 1.21,
+      "detected": false
+    },
+    {
+      "sym": "V",
+      "date": "2026-04-28",
+      "surprise": 198.1,
+      "peak_z": 6.86,
+      "detected": true
+    },
+    {
+      "sym": "GOOGL",
+      "date": "2026-04-29",
+      "surprise": 95.8,
+      "peak_z": 6.52,
+      "detected": true
+    },
+    {
+      "sym": "NKE",
+      "date": "2025-09-30",
+      "surprise": 80.1,
+      "peak_z": 4.49,
+      "detected": true
+    },
+    {
+      "sym": "NKE",
+      "date": "2025-03-20",
+      "surprise": 79.6,
+      "peak_z": 2.79,
+      "detected": true
+    },
+    {
+      "sym": "BA",
+      "date": "2026-04-22",
+      "surprise": 70.8,
+      "peak_z": 2.49,
+      "detected": false
+    },
+    {
+      "sym": "BA",
+      "date": "2025-04-23",
+      "surprise": 58.1,
+      "peak_z": 1.86,
+      "detected": false
+    }
+  ]
+}
