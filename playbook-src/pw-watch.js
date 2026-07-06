@@ -308,6 +308,26 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip */ }
   }
 
+  // ---- FinTwit KOL sentiment (Alva Platform Data, host zet, public read) ----
+  const sentiRows = [];
+  try {
+    const sraw = await alfs.readFile("/alva/home/zet/feeds/kol-ticker-sentiment/v1/data/sentiment/tickers/@last/1");
+    const sarr = JSON.parse(String(sraw));
+    const srows = []; (Array.isArray(sarr) ? sarr : [sarr]).forEach((x) => { if (x && x.items) srows.push(...x.items); else if (x) srows.push(x); });
+    const sBy = {}; srows.forEach((r) => { const t = r.ticker || r.symbol; if (t) sBy[t] = r; });
+    for (const p of profiles) {
+      const r = sBy[p.symbol]; if (!r) continue;
+      const bull = r.bull_kol_count_30d || 0, bear = r.bear_kol_count_30d || 0, tot = bull + bear;
+      if (tot < 2) continue;
+      const lean = (bull - bear) / tot;
+      let state = "mixed", note = "";
+      if (lean >= 0.5 && bull >= 3) { state = "KOL-bullish"; note = bull + " tracked KOLs bullish / " + bear + " bearish (30d), " + (r.bull_signal_count_30d || 0) + " bull calls."; }
+      else if (lean <= -0.5 && bear >= 3) { state = "KOL-bearish"; note = bear + " tracked KOLs bearish / " + bull + " bullish (30d)."; }
+      else { note = bull + " bull / " + bear + " bear KOLs (30d)."; }
+      sentiRows.push({ date: asof * 1000, symbol: p.symbol, bull_30d: bull, bear_30d: bear, lean: round(lean, 2), state, note });
+    }
+  } catch (e) { /* fintwit unavailable → skip */ }
+
   // ---- per holding evaluation ----
   const evals = [];
   for (const p of profiles) {
@@ -511,6 +531,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("symbol"), num("atm_iv_pct"), num("expected_move_pct"), num("iv_premium"), num("skew_pts"), num("days"), str("state"), str("note")]) });
   feed.def("crypto", { rows: makeDoc("Crypto Microstructure", "Perp funding + OI for crypto refs", [
     str("ref"), str("holdings"), num("funding_annual_pct"), num("funding_z"), num("oi_change_pct"), str("state"), str("note")]) });
+  feed.def("sentiment", { rows: makeDoc("KOL Sentiment", "FinTwit curated-account stance per holding", [
+    str("symbol"), num("bull_30d"), num("bear_30d"), num("lean"), str("state"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -549,6 +571,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     if (smRows.length) await ctx.self.ts("smartmoney", "rows").append(smRows);
     if (optRows.length) await ctx.self.ts("options", "rows").append(optRows);
     if (cryptoRows.length) await ctx.self.ts("crypto", "rows").append(cryptoRows);
+    if (sentiRows.length) await ctx.self.ts("sentiment", "rows").append(sentiRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.

@@ -62,3 +62,31 @@ where it is an explicit thesis reference.
 - Phase 2: ✅ DONE — options-signal.js verified (MSTR ±22% expected move, 12pt downside skew); live per-holding options enrichment
 - Phase 3: ✅ DONE — crypto-micro.js verified (BTC funding 8%/yr, OI +9%); live crypto backdrop on crypto-linked holdings (MSTR via BTC)
 - Phase 4: ✅ DONE (semiconductor) — DXI memory-cycle overlay live (NVDA tailwind); ETF-flows + estimate-revisions specced as conventional confirmers (not wired in the 5-holding demo)
+
+---
+
+## Round 2 — Community-inspired optimizations
+
+Referencing Alva's trending playbooks (zet's FinTwit leaderboard/sentiment ★72/17,
+lake's chipflation, PURR mNAV tracker, war-room consoles, scheduled AI digests).
+Same architecture principle (new source → existing mechanism, no new noise).
+
+- **Phase A — FinTwit KOL sentiment.** Per-holding bullish/bearish signal from
+  quality-weighted covered accounts. Role: information-layer confirmer + divergence
+  (KOLs flip vs price). Guardrail: weight by track record; confirmer, not "influencer shouting".
+- **Phase B — Crypto-treasury mNAV lens.** For crypto-linked names (MSTR): market
+  cap vs on-chain crypto-holdings NAV → premium/discount. Role: crypto-linked
+  enrichment / valuation context. Data: company-crypto-holdings + market cap + BTC price.
+- **Phase C — Scheduled AI daily digest.** A once-a-day narrative summary of the
+  book (alpi/alvaask), separate from quiet-by-default alerts. Habit-forming touchpoint.
+- **Phase D — Single-holding War-Room drill-down.** Click a holding → a deep view
+  aggregating all its signals (price/thesis/insider/options/crypto/sentiment).
+- **Phase E — Presentation.** Catchier name, a pinned creator's note, precise tags
+  for explore discoverability.
+
+### Round 2 status
+- Phase A: ✅ DONE — fintwit-sentiment.js verified (NVDA 11 KOLs bullish/0 bearish, source Alva Fintwit Intelligence); live KOL sentiment chip on holdings
+- Phase B: pending
+- Phase C: pending
+- Phase D: pending
+- Phase E: pending
