@@ -89,4 +89,4 @@ Same architecture principle (new source → existing mechanism, no new noise).
 - Phase B: ✅ DONE — mnav-lens.js verified (MSTR mNAV 0.65 = 35% discount to 847k-BTC NAV; materiality gate excludes COIN 41x); live mNAV chip on crypto-treasury holdings
 - Phase C: ✅ DONE — deterministic daily digest weaving price/thesis/macro/smart-money/valuation into one narrative; top of Watch tab
 - Phase D: ✅ DONE — click any holding → War-Room modal aggregating price/thesis/mNAV/sentiment/options/crypto/smart-money
-- Phase E: pending
+- Phase E: ✅ DONE — renamed "thesis-aware monitor", 10 discovery tags, richer description, pinned creator note inviting remix
