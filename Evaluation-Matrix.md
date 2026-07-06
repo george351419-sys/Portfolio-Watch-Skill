@@ -53,7 +53,7 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 |---|---|---|
 | Push delivery to **Discord + web** with deep link | 🟢 | `notification-history`: channel `discord`, status `sent` |
 | Telegram/Slack (same fanout pipeline) | 📝 | identical `active_channel` path; not connected on demo |
-| **Alert fusion** — Narrative Fusing + Silent Update | 🔵 · 📝 | `alert-fusion.js` self-test (3-event→1 card, buzz 3→2); **editable-card delivery needs a BYOD bot token — not wired** |
+| **Alert fusion** — Narrative Fusing + Silent Update | 🔵 · ⚠️ | logic in `alert-fusion.js` (3-event→1 card, buzz 3→2); **on-the-wire delivery now wired in the feed** (`deliverTelegram`: sendMessage first, editMessageText silent updates, re-send on escalation) — activates when the `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` secrets are set (BYOD). Not demoed end-to-end (no bot token). |
 | Interface: Watch/Theory/Formulas, War-Room, sliders | 🟢 | live, passes `alva lint` |
 | Search-add **any** ticker (UDF profiles it live) | 🟢 | `updateWatchlist` add path |
 | **Demo/Live toggle** (instant, client-side) | 🟢 | dual-snapshot: each mode has its own bucket; the header switches buckets **instantly** for any viewer. The Live bucket refreshes on the scheduled feed run. |

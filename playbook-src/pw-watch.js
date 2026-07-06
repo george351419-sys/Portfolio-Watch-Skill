@@ -16,6 +16,41 @@ const BASE = "https://data-tools.prd.space.id";
 const JWT = secret.loadPlaintext("ARRAYS_JWT");
 const H = { headers: { Authorization: "Bearer " + JWT } };
 const USER = env.username;
+// Telegram silent-update delivery (BYOD): set secrets TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID
+// to deliver one message per incident and EDIT it in place on updates (silent), re-sending
+// only on escalation. Absent ⇒ skipped entirely; the platform web/Discord push still fires.
+let TG_TOKEN = null, TG_CHAT = null;
+try { TG_TOKEN = secret.loadPlaintext("TELEGRAM_BOT_TOKEN"); } catch (e) {}
+try { TG_CHAT = secret.loadPlaintext("TELEGRAM_CHAT_ID"); } catch (e) {}
+async function tgCall(method, payload) {
+  const r = await http.fetch("https://api.telegram.org/bot" + TG_TOKEN + "/" + method,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  return JSON.parse(await r.text());
+}
+// One Telegram message per incident (symbol+day). First fire = sendMessage (buzzes);
+// later updates to the same incident = editMessageText (silent, no new buzz); an
+// escalation (higher tier) re-sends to re-buzz. Mirrors alert-fusion.js on the wire.
+async function deliverTelegram(ctx, pushSet, overview) {
+  if (!TG_TOKEN || !TG_CHAT) return { wired: false };
+  let sent = 0, edited = 0;
+  for (const s of pushSet) {
+    const key = "tgmsg_" + s.symbol + "_" + overview.as_of;
+    const rank = s.tier === "P0" ? 3 : s.tier === "P1" ? 2 : 1;
+    const prev = await ctx.kv.load(key).then((x) => (x ? JSON.parse(x) : null)).catch(() => null);
+    const text = "*[" + s.tier + "] " + s.symbol + "*\n" + s.headline + "\n" + s.why +
+      "\nImpact ~" + round(s.ret_pct * s.weight, 2) + "% of portfolio\n" + s.deep_link;
+    try {
+      if (prev && prev.mid && rank <= prev.rank) {
+        await tgCall("editMessageText", { chat_id: TG_CHAT, message_id: prev.mid, text, parse_mode: "Markdown" }); edited++;
+      } else {
+        const res = await tgCall("sendMessage", { chat_id: TG_CHAT, text, parse_mode: "Markdown" });
+        const mid = res && res.result && res.result.message_id;
+        if (mid) await ctx.kv.put(key, JSON.stringify({ mid, rank })); sent++;
+      }
+    } catch (e) { /* best-effort; web/Discord push already covers delivery */ }
+  }
+  return { wired: true, sent, edited };
+}
 // asof is config-driven so the interface's Demo/Live toggle can flip it without a
 // code change: mode.json {demo_asof:<sec>} pins the demo; absent/null ⇒ live now.
 // An explicit cron arg still overrides (for one-off backfills). Reassigned in main.
@@ -661,6 +696,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       body = lines.join("\n");
       pushedFlag = true;
     }
+    // BYOD Telegram silent-update delivery (no-op unless the bot token secret is set)
+    await deliverTelegram(ctx, pushSet, overview);
 
     await ctx.self.ts("portfolio", "overview").append([overview]);
     await ctx.self.ts("holdings", "rows").append(holdings);
