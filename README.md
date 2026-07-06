@@ -101,7 +101,7 @@ notes/                        Working trail (not deliverables)
 - **Two feeds** — `pw-profile` (adaptive per-holding baseline: EWMA/MAD vol, OLS β, residual vol σ_ε; cold-start prior) → `pw-watch` (residual-vol z-scores, FDR, hysteresis, bounded 0–100 scoring, quiet-by-default `notify/message`).
 - **Interface** — **three tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist, each with **its own thresholds**, over an on-feed universe), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
 - **Alert** — web push delivered end-to-end (status = sent) with a deep link that lands on the matching card. Verified.
-- **Demo pin** — the Playbook is pinned to the 2026-06-25 session (a real day AAPL fell −6.1%, a −4.1σ idiosyncratic P0) so the interface/alert show a populated, real state. To run live: redeploy `pw-watch` without the `asof` arg.
+- **Demo pin** — the Playbook is pinned to the **2024-11-21/22** session so two real thesis signals show at once: **MSTR** (price thesis — BTC +4.3% but MSTR −16.2% → −4.8σ leverage-thesis break, P0) and **ITB** (catalyst thesis via Polymarket — P(Dec Fed cut) fell 83%→60% → strained, P1). The watched set (NVDA/TSLA/AAPL/MSTR/ITB) is a live config. To run live: redeploy `pw-watch` without the `asof` arg.
 
 ## Reproducing the backtest
 
