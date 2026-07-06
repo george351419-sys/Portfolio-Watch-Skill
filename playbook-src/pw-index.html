@@ -199,10 +199,12 @@
         var cards = [];
         STATE.holdings.forEach(function (h) {
           var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol];
-          var isThesis = srv && (srv.kind === "thesis" || srv.thesis_break); var tier = isThesis ? "P0" : tierOf(absZ);
-          if (!tier) return;
-          var score = isThesis ? 100 : Math.round(100 * (1 - Math.exp(-absZ / 1.5)));
-          var confirmed = Number(h.rvol) >= 2; var headline, why, sigId, kind = isThesis ? "thesis" : "move";
+          var isThesis = !!(srv && srv.thesis_break);
+          var kind = isThesis ? (srv.kind || "thesis") : "move";
+          var tier = isThesis ? srv.tier : tierOf(absZ);
+          if (!tier || tier === "—") return;
+          var score = isThesis ? srv.score : Math.round(100 * (1 - Math.exp(-absZ / 1.5)));
+          var confirmed = Number(h.rvol) >= 2; var headline, why, sigId;
           if (srv && (isThesis || srv.tier)) { headline = srv.headline; why = srv.why; sigId = srv.signal_id; }
           if (!headline) { headline = h.symbol + " " + pct(h.ret_pct) + " (" + Number(h.z).toFixed(1) + "σ), idiosyncratic " + Number(h.residual_z).toFixed(1) + "σ" + (confirmed ? ", volume " + Number(h.rvol).toFixed(1) + "× avg" : ", no volume confirm");
             why = tier === "P0" ? "Large idiosyncratic move not explained by the market." : tier === "P1" ? "Notable single-name move beyond its residual-vol range." : "Elevated move, watching for confirmation."; }
@@ -216,8 +218,10 @@
         var cards = evidenceCards(); var el = document.getElementById("signals");
         if (!cards.length) el.innerHTML = '<div class="empty">No moves clear these thresholds — nothing beyond normal range.</div>';
         else el.innerHTML = cards.map(function (c) {
-          var isT = c.kind === "thesis";
-          var badge = isT ? '<span class="badge t-THESIS">THESIS BREAK · P0</span>' : '<span class="badge t-' + c.tier + '">' + c.tier + "</span>";
+          var isT = c.kind === "thesis" || c.kind === "catalyst";
+          var badge = c.kind === "catalyst" ? '<span class="badge t-THESIS">CATALYST · ' + c.tier + "</span>"
+            : c.kind === "thesis" ? '<span class="badge t-THESIS">THESIS BREAK · ' + c.tier + "</span>"
+            : '<span class="badge t-' + c.tier + '">' + c.tier + "</span>";
           return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span></div></div>";
         }).join("");
         var p0 = cards.filter(function (c) { return c.tier === "P0"; }).length, p1 = cards.filter(function (c) { return c.tier === "P1"; }).length, p2 = cards.filter(function (c) { return c.tier === "P2"; }).length;
@@ -230,8 +234,8 @@
       function renderHoldings() {
         var hs = STATE.holdings.slice().sort(function (a, b) { return b.weight - a.weight; });
         document.getElementById("holdings").innerHTML = hs.map(function (h) {
-          var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol]; var isT = srv && (srv.kind === "thesis" || srv.thesis_break); var tier = isT ? "P0" : tierOf(absZ);
-          var badge = tier ? '<span class="badge t-' + (isT ? "THESIS" : tier) + '">' + (isT ? "THESIS" : tier) + "</span>" : "";
+          var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol]; var isT = !!(srv && srv.thesis_break); var tier = isT ? srv.tier : tierOf(absZ);
+          var badge = tier && tier !== "—" ? '<span class="badge t-' + (isT ? "THESIS" : tier) + '">' + (isT ? "THESIS" : tier) + "</span>" : "";
           var tags = ""; if (h.near_52w_high) tags += '<span class="tag52">52w high</span>'; if (h.near_52w_low) tags += '<span class="tag52">52w low</span>';
           var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
           return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + "</div>";

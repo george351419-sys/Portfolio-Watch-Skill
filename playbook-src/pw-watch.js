@@ -127,7 +127,33 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   const refMaps = {};
   for (const sym of Object.keys(THESIS)) {
     const t = THESIS[sym];
-    if (!refMaps[t.ref]) { try { refMaps[t.ref] = await refReturnMap(t.ref, asof); } catch (e) { refMaps[t.ref] = null; } }
+    if (t.type !== "catalyst" && t.ref && !refMaps[t.ref]) { try { refMaps[t.ref] = await refReturnMap(t.ref, asof); } catch (e) { refMaps[t.ref] = null; } }
+  }
+
+  // ---- catalyst theses: Polymarket P(event) up to asof → collapse signal ----
+  const catalystMap = {};
+  for (const sym of Object.keys(THESIS)) {
+    const t = THESIS[sym];
+    if (t.type !== "catalyst" || !t.token) continue;
+    try {
+      const r = await http.fetch("https://clob.polymarket.com/prices-history?market=" + t.token + "&interval=max&fidelity=1440", {});
+      const hj = JSON.parse(await r.text());
+      const pts = ((hj && hj.history) || []).filter((x) => x.t <= asof);
+      if (pts.length < 8) continue;
+      const P = pts.map((x) => x.p);
+      const dP = []; for (let i = 1; i < P.length; i++) dP.push(P[i] - P[i - 1]);
+      const mdP = dP.reduce((a, b) => a + b, 0) / dP.length;
+      const sig = Math.sqrt(dP.reduce((s, x) => s + (x - mdP) ** 2, 0) / (dP.length - 1)) || 0.01;
+      const pNow = P[P.length - 1];
+      const pHigh = Math.max(...P.slice(Math.max(0, P.length - 30))); // recent-window high (robust)
+      const relDrop = pHigh > 0 ? (pHigh - pNow) / pHigh : 0;
+      let worst = 0; const w = 10;
+      for (let i = w; i < P.length; i++) { const mv = P[i] - P[i - w]; if (mv < worst) worst = mv; }
+      const zc = worst / (sig * Math.sqrt(w));
+      const broke = relDrop >= 0.5 || pNow < 0.1 * pHigh;
+      const strained = !broke && (relDrop >= 0.2 || zc <= -2);
+      catalystMap[sym] = { label: t.label, ref: t.ref, pNow, pHigh, relDrop, z: zc, broke, strained };
+    } catch (e) { /* skip on fetch/parse error */ }
   }
 
   // ---- per holding evaluation ----
@@ -158,7 +184,11 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     // ---- thesis-linked check: is the buy-thesis still holding? ----
     let thesis = null;
     const tcfg = THESIS[p.symbol];
-    if (tcfg && refMaps[tcfg.ref]) {
+    if (tcfg && tcfg.type === "catalyst" && catalystMap[p.symbol]) {
+      const c = catalystMap[p.symbol];
+      thesis = { kind: "catalyst", ref: c.ref, label: c.label, pNow: c.pNow, pHigh: c.pHigh,
+        relDrop: c.relDrop, zc: c.z, broke: c.broke, strained: c.strained };
+    } else if (tcfg && tcfg.ref && refMaps[tcfg.ref]) {
       const rmap = refMaps[tcfg.ref];
       const pairs = [];
       for (let i = 1; i < bars.length; i++) {
@@ -228,15 +258,22 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     // ---- thesis break escalates straight to P0 (challenges the buy logic) ----
     let kind = "move";
     const th = e.thesis;
-    if (th && th.broke) { tier = "P0"; surfaced = true; kind = "thesis"; }
+    if (th && th.broke) { tier = "P0"; surfaced = true; kind = th.kind === "catalyst" ? "catalyst" : "thesis"; }
+    else if (th && th.kind === "catalyst" && th.strained) { tier = "P1"; surfaced = true; kind = "catalyst"; }
 
-    const score = th && th.broke ? 100 : scoreOf(e, confirmed);
+    const score = th && th.broke ? 100 : (kind === "catalyst" ? 70 : scoreOf(e, confirmed));
     const sigId = p.symbol + "_" + ymd(e.today.time_close * 1000);
     const dir = e.ret >= 0 ? "up" : "down";
     const pc = (x) => (x >= 0 ? "+" : "") + round(x * 100, 1) + "%";
+    const pp = (x) => round(x * 100, 0) + "%";
 
     let headline = "", why = "";
-    if (kind === "thesis") {
+    if (kind === "catalyst") {
+      const verb = th.broke ? "void" : "weakening";
+      headline = "⚠️ Catalyst thesis " + (th.broke ? "broken" : "strained") + " — " + p.symbol + ": " + th.label + ".";
+      why = th.ref + " fell from " + pp(th.pHigh) + " to " + pp(th.pNow) + " (−" + round(th.relDrop * 100, 0) +
+        "%, " + round(th.zc, 1) + "σ). The event you're betting on is being priced " + (th.broke ? "out" : "down") + " — the buy logic is " + verb + ".";
+    } else if (kind === "thesis") {
       headline = "⚠️ Thesis break — " + p.symbol + ": held as a " + th.label + ", but the relationship isn't holding.";
       why = th.ref + " " + pc(th.refRet) + " (" + round(th.zRef, 1) + "σ) → thesis-expected " + p.symbol + " " +
         pc(th.expected) + " (β=" + round(th.beta, 1) + "), actual " + pc(e.ret) + ". Divergence " + pc(th.divergence) +
@@ -257,15 +294,17 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       residual_z: round(e.zIdio, 2), rvol: round(e.rvol, 2), dd_from_high_pct: round(e.ddFromHigh * 100, 2),
       beta: round(p.beta, 2), sigma_eps_pct: round(p.sigma_eps * 100, 2), tier: surfaced ? tier : "—",
       cold_start: !!p.cold_start, near_52w_high: !!e.near52wHigh, near_52w_low: !!e.near52wLow,
-      thesis_label: th ? th.label : "", thesis_ref: th ? th.ref : "", thesis_corr: th ? round(th.corr, 2) : null,
-      thesis_state: th ? (th.broke ? "BROKEN" : th.V >= 1.2 ? "strained" : "intact") : "",
+      thesis_label: th ? th.label : "", thesis_ref: th ? th.ref : "",
+      thesis_corr: th && th.kind !== "catalyst" ? round(th.corr, 2) : null,
+      thesis_state: th ? (th.broke ? "BROKEN" : th.strained || th.V >= 1.2 ? "strained" : "intact") : "",
     });
     if (surfaced) {
       signals.push({
         date: e.today.time_close * 1000, signal_id: sigId, symbol: p.symbol, name: p.name, tier, score, kind,
         direction: dir, ret_pct: round(e.ret * 100, 2), z: round(e.zTot, 2), residual_z: round(e.zIdio, 2),
         rvol: round(e.rvol, 2), weight: round(p.weight, 3), confirmed, market_driven: e.marketDriven,
-        fdr_pass: fdrPass.has(p.symbol), cold_start: !!p.cold_start, thesis_break: kind === "thesis", headline, why,
+        fdr_pass: fdrPass.has(p.symbol), cold_start: !!p.cold_start,
+        thesis_break: kind === "thesis" || kind === "catalyst", headline, why,
         deep_link: "https://alva.ai/u/" + USER + "/playbooks/" + PLAYBOOK + "#sig-" + sigId,
       });
     }

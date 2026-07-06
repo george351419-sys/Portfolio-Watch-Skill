@@ -1,10 +1,47 @@
 {
   "portfolio_name": "My Watch",
   "holdings": [
-    { "symbol": "NVDA", "name": "NVIDIA", "weight": 0.25, "sector": "Semiconductors" },
-    { "symbol": "TSLA", "name": "Tesla", "weight": 0.25, "sector": "Autos/EV" },
-    { "symbol": "AAPL", "name": "Apple", "weight": 0.25, "sector": "Hardware" },
-    { "symbol": "MSTR", "name": "MicroStrategy", "weight": 0.25, "sector": "Crypto-linked",
-      "thesis": { "ref": "BTC", "refType": "crypto", "type": "leverage", "label": "leveraged BTC play" } }
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA",
+      "weight": 0.2,
+      "sector": "Semiconductors"
+    },
+    {
+      "symbol": "TSLA",
+      "name": "Tesla",
+      "weight": 0.2,
+      "sector": "Autos/EV"
+    },
+    {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "weight": 0.2,
+      "sector": "Hardware"
+    },
+    {
+      "symbol": "MSTR",
+      "name": "MicroStrategy",
+      "weight": 0.2,
+      "sector": "Crypto-linked",
+      "thesis": {
+        "ref": "BTC",
+        "refType": "crypto",
+        "type": "leverage",
+        "label": "leveraged BTC play"
+      }
+    },
+    {
+      "symbol": "ITB",
+      "name": "Homebuilders (ITB)",
+      "weight": 0.2,
+      "sector": "Homebuilders",
+      "thesis": {
+        "type": "catalyst",
+        "token": "11567814642074862867749936284471148455273423515322037976014884555300111576108",
+        "ref": "Polymarket P(Fed cuts 25bps in Dec)",
+        "label": "held betting the Fed cuts rates in December"
+      }
+    }
   ]
 }

@@ -83,7 +83,8 @@ alert-fusion.js               Reference implementation of Narrative Fusing + Sil
 thesis-monitor.js             Thesis-linked monitoring — a broken buy-thesis escalates to P0
                               (verified on real MSTR/BTC data: 2024-11-21 −4.6σ leverage-thesis break)
 catalyst-thesis.js            Catalyst thesis via Polymarket — when the event you're betting on
-                              gets priced out, the thesis breaks (verified: Fed Jan-2024 cut odds 51%→1% → P0)
+                              gets priced out, the thesis breaks. Verified on real data AND wired live:
+                              ITB held betting a Dec Fed cut, P(cut) 83%→60% → catalyst thesis strained (P1)
 Backtest-Report.md            Precision-recall report, 3 rounds, per-cohort reusability
 backtest/                     Reproducibility: runtime script + raw result JSONs
   pw-backtest.js              Alva runtime backtest (seed 20260705)
