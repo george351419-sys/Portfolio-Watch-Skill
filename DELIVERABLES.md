@@ -40,14 +40,16 @@ Polymarket event probability).
 
 ## Interface
 
-Three tabs — **Watch · Theory · Formulas**:
-- **Watch:** daily digest → macro/sector & smart-money context → search-add/remove
-  monitored set (UDF, instant analysis) → threshold sliders → ranked signals
-  (deep-link anchors) → holdings grid (each tile enriched with mNAV / KOL / options
-  / crypto; **click → War-Room** modal aggregating a holding's full signal stack) →
-  portfolio lens.
-- **Theory:** the full methodology (the cross-checking sources + asset-class benchmarks, layered
-  model, three-check gate, noise rules, ranking, thesis).
+Four tabs — **Watch · Incident · Theory · Formulas**:
+- **Watch:** daily digest → **"Arm a thesis"** onboarding (one-tap confirm a suggested
+  buy-thesis) → macro/sector & smart-money context → search-add/remove monitored set
+  (UDF, instant analysis) → threshold sliders → ranked signals (deep-link anchors;
+  crypto-gate chip) → holdings grid (each tile enriched with mNAV / KOL / options /
+  crypto; **click → War-Room** modal) → portfolio lens.
+- **Incident:** how one P0 fuses from price → volume → options → smart-money → thesis
+  break into a single evolving card (Narrative Fusing + Silent Update, visualized).
+- **Theory:** the full methodology (cross-checking sources + asset-class benchmarks,
+  layered model, three-check gate, noise rules incl. crypto gate, ranking, thesis).
 - **Formulas:** the exact math.
 
 ## Live operational state (verified)
