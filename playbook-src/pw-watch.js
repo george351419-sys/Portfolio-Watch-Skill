@@ -202,6 +202,27 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip */ }
   }
 
+  // ---- semiconductor cycle (DXI memory index) → sector context for semi holdings ----
+  try {
+    const dxiNow = Math.floor(Date.now() / 1000);
+    const dxi = await getJson(BASE + "/api/v1/other/semiconductor/dxi-index?start_time=" + (dxiNow - 120 * 86400) + "&end_time=" + dxiNow + "&limit=100");
+    if (dxi.length) {
+      const d0 = dxi[0]; // latest first
+      const val = d0.value, ma30 = d0.ma30, ma60 = d0.ma60, chg = d0.change_pct;
+      const semis = profiles.filter((p) => /semiconductor/i.test(p.sector || ""));
+      if (semis.length) {
+        const exposure = semis.reduce((a, p) => a + (p.weight || 0), 0);
+        const up = val > ma30 && ma30 > ma60, down = val < ma30 && ma30 < ma60;
+        if (up || down) {
+          macroRows.push({ date: asof * 1000, factor: "semiconductor", label: "Memory cycle (DXI)",
+            prob_now_pct: null, change_pct: round(chg, 1), z: null, exposure_pct: round(exposure * 100, 0), holdings: semis.map((p) => p.symbol).join(", "),
+            note: "Memory prices (TrendForce DXI, as of " + d0.date + ") are " + (up ? "rising — above their 30/60-day averages: a semiconductor-cycle tailwind" : "rolling over — below their 30/60-day averages: a semiconductor-cycle headwind") +
+              " for " + semis.map((p) => p.symbol).join(", ") + " (" + round(exposure * 100, 0) + "% of book). [DXI is most direct for memory names; a broad cycle read for GPU/AI via HBM.]" });
+        }
+      }
+    }
+  } catch (e) { /* skip */ }
+
   // ---- smart-money positioning (insider open-market buys, trailing, current data) ----
   // Context overlay, not per-stock alerts: "who is backing this with their own money".
   const smRows = [];

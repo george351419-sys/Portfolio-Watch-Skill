@@ -180,6 +180,11 @@ to every holding when data exists; templates add asset-specific intelligence.
   an estimate/thesis change, is a signal.
 - Require multiple credible sources; suppress reposted old news, single-source
   rumors, and generic market commentary. Social velocity is a weak signal only.
+- **Semiconductor cycle (TrendForce DXI memory index)** — built (v1) as a
+  *sector-context* overlay: DXI trend vs its 30/60-day MAs = a memory-cycle
+  tailwind/headwind mapped to semiconductor holdings (most direct for memory
+  names; a broad cycle read for GPU/AI via HBM). Sector fund-flows (rotation) and
+  consensus estimate-revision momentum are specced as conventional confirmers.
 - **Prediction markets (Polymarket) as a structured event signal** — for events
   with a *liquid* market (Fed decisions, elections, some catalysts), a sharp move
   in the event probability is a quantified, often-early re-pricing. Use as a

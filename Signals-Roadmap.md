@@ -61,4 +61,4 @@ where it is an explicit thesis reference.
 - Phase 1: ✅ DONE — smart-money.js verified (MSTR 10-insider cluster $31M, TSLA CEO $1B); live "Smart-money positioning" green context panel
 - Phase 2: ✅ DONE — options-signal.js verified (MSTR ±22% expected move, 12pt downside skew); live per-holding options enrichment
 - Phase 3: ✅ DONE — crypto-micro.js verified (BTC funding 8%/yr, OI +9%); live crypto backdrop on crypto-linked holdings (MSTR via BTC)
-- Phase 4: pending
+- Phase 4: ✅ DONE (semiconductor) — DXI memory-cycle overlay live (NVDA tailwind); ETF-flows + estimate-revisions specced as conventional confirmers (not wired in the 5-holding demo)
