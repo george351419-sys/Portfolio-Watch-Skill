@@ -65,7 +65,7 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 | Tier | Asset classes | State |
 |---|---|---|
 | **Fully implemented** | US-listed equities (SPY/sector-ETF β, residual vol, volume) | main path; backtested on 27 stocks / 37,837 days |
-| **Partially implemented** | Crypto & crypto-linked equities (BTC benchmark, perp funding/OI, mNAV) | works & demoed (MSTR/COIN/ITB), but ⚠️ **small samples, higher variance — thresholds should be raised / confirmation weighted** (backtest §8) |
+| **Partially implemented** | Crypto & crypto-linked equities (BTC benchmark, perp funding/OI, mNAV) | works & demoed (MSTR/COIN/ITB), with a **crypto gate**: thresholds ×1.25 + volume-confirmation-to-page (unconfirmed moves demoted a tier; thesis breaks exempt) — implemented in feed + interface (`asset_class`/`crypto_gated`). Small samples remain a caveat. |
 | | ETFs | own-bar fallback path; light demo |
 | **Specced** | ADRs, REITs, closed-end funds, SPACs, preferreds, illiquid names | benchmark routing defined in SKILL Appendix A; not individually demoed |
 | | Brand-new listings | cold-start path coded, ⚠️ not exercised |

@@ -467,7 +467,12 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   for (const e of evals) {
     const p = e.p, confirmed = e.rvol != null && e.rvol >= 2;
     const rs = Math.abs(e.zIdio);
-    const kSurface = 2.0 * e.infl, kPush = 2.5 * e.infl, kForce = 3.5 * e.infl;
+    // Crypto & crypto-linked names are small-sample / high-variance (backtest §8): raise the
+    // bar (×1.25) and require volume confirmation to page — an unconfirmed crypto price move
+    // is demoted one tier. A broken THESIS still forces P0 below (high-conviction, exempt).
+    const cryptoAsset = /crypto/i.test(p.sector || "");
+    const cx = cryptoAsset ? 1.25 : 1.0;
+    const kSurface = 2.0 * e.infl * cx, kPush = 2.5 * e.infl * cx, kForce = 3.5 * e.infl * cx;
     const passFDR = fdrPass.has(p.symbol);
     let tier = "P3", surfaced = false;
     if (!e.marketDriven && passFDR) {
@@ -475,6 +480,9 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       if (rs >= kForce || (rs >= 3.0 && confirmed) || sc >= 80) tier = "P0";
       else if (rs >= kPush || sc >= 60) tier = "P1";
       else if (rs >= kSurface || sc >= 40) tier = "P2";
+      if (cryptoAsset && !confirmed && sc < 80) { // demote unconfirmed crypto moves
+        if (tier === "P0") tier = "P1"; else if (tier === "P1") tier = "P2";
+      }
       if (tier !== "P3") surfaced = true;
     }
     if (e.near52wHigh || e.near52wLow) surfaced = true;
@@ -527,7 +535,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
         date: SNAP_BUCKET, signal_id: sigId, symbol: p.symbol, name: p.name, tier, score, kind,
         direction: dir, ret_pct: round(e.ret * 100, 2), z: round(e.zTot, 2), residual_z: round(e.zIdio, 2),
         rvol: round(e.rvol, 2), weight: round(p.weight, 3), confirmed, market_driven: e.marketDriven,
-        fdr_pass: fdrPass.has(p.symbol), cold_start: !!p.cold_start,
+        fdr_pass: fdrPass.has(p.symbol), cold_start: !!p.cold_start, asset_class: cryptoAsset ? "crypto" : "equity",
+        crypto_gated: cryptoAsset && !confirmed,
         thesis_break: kind === "thesis" || kind === "catalyst", headline, why,
         deep_link: "https://alva.ai/u/" + USER + "/playbooks/" + PLAYBOOK + "#sig-" + sigId,
       });
@@ -587,7 +596,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   feed.def("signals", { items: makeDoc("Ranked Signals", "Surfaced real-moves", [
     str("signal_id"), str("symbol"), str("name"), str("tier"), num("score"), str("kind"), str("direction"), num("ret_pct"), num("z"),
     num("residual_z"), num("rvol"), num("weight"), bool("confirmed"), bool("market_driven"), bool("fdr_pass"), bool("cold_start"), bool("thesis_break"),
-    str("headline"), str("why"), str("deep_link")]) });
+    str("asset_class"), bool("crypto_gated"), str("headline"), str("why"), str("deep_link")]) });
   feed.def("universe", { rows: makeDoc("Searchable Universe", "Per-ticker evidence for search/add", [
     str("symbol"), num("price"), num("ret_pct"), num("z"), num("residual_z"), num("rvol"), num("beta")]) });
   feed.def("macro", { rows: makeDoc("Macro Context", "Portfolio-level prediction-market overlay", [

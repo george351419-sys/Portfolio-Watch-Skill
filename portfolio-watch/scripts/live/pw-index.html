@@ -85,6 +85,21 @@
       .mode-seg { padding: 2px 8px; border-radius: 999px; border: 0.5px solid var(--line-l3); color: var(--text-n7); cursor: pointer; font-size: 11px; }
       .mode-seg.mode-on { background: var(--text-n9); color: var(--grey-g0, #fff); border-color: var(--text-n9); cursor: default; }
       .mode-seg.mode-live.mode-on { background: var(--main-m4); border-color: var(--main-m4); }
+      .inc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-m); }
+      @media (max-width: 720px) { .inc-wrap { grid-template-columns: 1fr; } }
+      .tl { position: relative; padding-left: 22px; }
+      .tl::before { content: ""; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 1.5px; background: var(--line-l12); }
+      .tl-item { position: relative; margin-bottom: 14px; }
+      .tl-item::before { content: ""; position: absolute; left: -22px; top: 3px; width: 11px; height: 11px; border-radius: 999px; background: var(--grey-g2, #eee); border: 2px solid var(--b0-page); }
+      .tl-item.tl-headline::before { background: var(--main-m4); }
+      .tl-t { font-size: 11px; color: var(--text-n5); }
+      .tl-h { font-size: 13px; font-weight: 500; color: var(--text-n9); margin-top: 1px; }
+      .tl-d { font-size: 12px; color: var(--text-n7); margin-top: 2px; line-height: 1.5; }
+      .buzz { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+      .buzz-ring { background: rgba(220,38,38,0.12); color: var(--main-m4); }
+      .buzz-silent { background: var(--grey-g2, #eee); color: var(--text-n5); }
+      .fused { border-left: 3px solid var(--main-m4); background: linear-gradient(0deg, var(--grey-g01), rgba(220,38,38,0.04)); }
+      .fused-evolve { font-size: 11px; color: var(--text-n5); margin-top: 8px; border-top: 0.5px solid var(--line-l12); padding-top: 8px; }
       .method p { font-size: 13px; color: var(--text-n9); line-height: 1.6; margin: 0 0 12px; }
       .method .lbl { font-weight: 500; }
       .method code, .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--grey-g2, #f1f0ef); padding: 1px 5px; border-radius: 4px; }
@@ -107,6 +122,7 @@
       <div class="wr-overlay" id="wrOverlay"><div class="wr-modal" id="wrModal"></div></div>
       <div class="pw-tabs" id="tabs">
         <span class="pw-tab pwsel" data-tab="watch">Watch</span>
+        <span class="pw-tab" data-tab="incident">Incident</span>
         <span class="pw-tab" data-tab="theory">Theory</span>
         <span class="pw-tab" data-tab="formulas">Formulas</span>
       </div>
@@ -171,6 +187,7 @@
           <span class="lbl">· Crypto microstructure</span> — perp funding &amp; open interest for crypto-linked names.<br/>
           <span class="lbl">· Semiconductor cycle</span> — TrendForce DXI memory index for semis.</p>
           <p><span class="lbl">Benchmark by asset class.</span> Each holding is measured against the right ruler and endpoint: <b>US stocks</b> → SPY / sector ETF (OLS β, residual vol); <b>crypto &amp; crypto-linked</b> → BTC (spot + perp funding); <b>ETFs</b> → their own daily bars. New names are auto-profiled; brand-new listings enter a cold-start path (sector-median prior + high-frequency bootstrap).</p>
+          <p><span class="lbl">Crypto gate.</span> Crypto &amp; crypto-linked names are small-sample and high-variance (our backtest shows it), so they get a <b>higher bar (×1.25)</b> and must have <b>volume confirmation</b> to page — an unconfirmed crypto move is demoted one tier. A broken <b>thesis</b> is exempt (high-conviction): it still escalates straight to P0.</p>
         </div>
 
         <div class="sec-title">② Layered monitoring model</div>
@@ -214,6 +231,11 @@
       </div>
 
       <!-- ===================== FORMULAS ===================== -->
+      <div class="pw-panel" id="tab-incident">
+        <div class="sec-title">Incident timeline · how one P0 fuses into a single card</div>
+        <div id="incident"></div>
+      </div>
+
       <div class="pw-panel" id="tab-formulas">
         <div class="sec-title">Formulas &amp; calculation</div>
         <div class="card method" id="formulas"></div>
@@ -286,21 +308,69 @@
         } catch (e) { setNote("Could not switch: " + esc(e && e.message ? e.message : String(e)), true); }
       }
 
+      // Incident timeline — shows how one holding's raw facts fuse into ONE evolving
+      // card with minimal phone buzzes (Narrative Fusing + Silent Update, from alert-fusion.js).
+      function renderIncident() {
+        var el = document.getElementById("incident"); if (!el) return;
+        var sigs = Object.keys(STATE.signalsBySym).map(function (k) { return STATE.signalsBySym[k]; });
+        // pick the most instructive incident: a thesis-break P0, else the top-score signal
+        var sym = null, best = -1;
+        sigs.forEach(function (s) { var w = (s.tier === "P0" ? 100 : s.tier === "P1" ? 50 : 10) + (s.thesis_break ? 40 : 0) + (s.score || 0); if (w > best) { best = w; sym = s.symbol; } });
+        if (!sym) {
+          el.innerHTML = '<div class="card"><div class="macro-note">No live incident in this snapshot — a quiet day, nothing cleared the bar. This tab shows, when something does fire, how the raw facts (price, volume, options, smart-money, thesis) collapse into <b>one evolving card</b> instead of several separate buzzes. Switch to <b>📌 Demo</b> to see the MSTR thesis-break incident.</div></div>';
+          return;
+        }
+        var sig = STATE.signalsBySym[sym], opt = STATE.optionsBySym[sym],
+            sm = (STATE.smartmoney || []).filter(function (x) { return x.symbol === sym; })[0],
+            mn = STATE.mnavBySym[sym];
+        // causal-order evidence trail: raw facts first, interpretation (thesis) as the headline
+        var ev = [];
+        ev.push({ t: "Surface", head: sym + " " + pct(sig.ret_pct) + " · " + Number(sig.residual_z).toFixed(1) + "σ idiosyncratic",
+          desc: "Move judged against " + sym + "'s own residual volatility (market β stripped) — not a fixed %. This alone clears the surface bar.", buzz: "ring", label: "🔔 buzz 1 · surface" });
+        if (sig.rvol != null && Number(sig.rvol) >= 1.2) ev.push({ t: "Confirm", head: "Volume " + Number(sig.rvol).toFixed(1) + "× normal", desc: "Real participation, not thin-tape noise — folded in silently as evidence.", buzz: "silent", label: "· silent update" });
+        if (opt) ev.push({ t: "Confirm", head: "Options: ±" + opt.expected_move_pct + "% expected move" + (opt.skew_pts ? ", " + opt.skew_pts + "pt downside skew" : ""), desc: "The options market was already pricing stress — corroboration, same card.", buzz: "silent", label: "· silent update" });
+        if (sm && sm.state && sm.state !== "quiet") ev.push({ t: "Confirm", head: "Smart money: " + esc(sm.note || sm.state), desc: "Insider/congress flow — corroboration, same card.", buzz: "silent", label: "· silent update" });
+        if (mn && mn.note) ev.push({ t: "Context", head: "Valuation: " + esc(mn.note), desc: "Crypto-treasury NAV context, same card.", buzz: "silent", label: "· silent update" });
+        var headline = sig.thesis_break || sig.kind === "thesis";
+        ev.push({ t: headline ? "Escalation → P0" : "Ranked", head: esc((sig.headline || "").replace(/^⚠️ /, "")), desc: esc(sig.why || ""),
+          buzz: "ring", label: headline ? "🔔 buzz 2 · escalation to P0" : "🔔 tier " + sig.tier, headline: true });
+        var buzzes = ev.filter(function (e) { return e.buzz === "ring"; }).length;
+        var tl = ev.map(function (e) {
+          return '<div class="tl-item' + (e.headline ? " tl-headline" : "") + '"><div class="tl-t">' + e.t +
+            ' <span class="buzz ' + (e.buzz === "ring" ? "buzz-ring" : "buzz-silent") + '">' + e.label + '</span></div>' +
+            '<div class="tl-h">' + e.head + '</div><div class="tl-d">' + e.desc + '</div></div>';
+        }).join("");
+        var card = '<div class="card fused"><div class="sig-head"><span class="sig-sym">' + esc(sym) + '</span>' +
+          '<span class="badge t-' + sig.tier + '">' + sig.tier + '</span>' + (headline ? '<span class="badge t-THESIS">THESIS BREAK</span>' : "") +
+          '<span class="sig-score">score ' + Math.round(sig.score || 0) + '</span></div>' +
+          '<div class="sig-line">' + esc((sig.headline || "").replace(/^⚠️ /, "")) + '</div>' +
+          '<div class="sig-why">' + esc(sig.why || "") + '</div>' +
+          '<div class="fused-evolve"><b>' + ev.length + ' facts → 1 card · ' + buzzes + ' phone buzz' + (buzzes > 1 ? "es" : "") +
+          '.</b> The card started as a surface price alert, absorbed volume/options/smart-money <b>silently</b> (edit-in-place, no new buzz), then re-buzzed once on escalation to P0. Fixed-% trackers would have sent ' + ev.length + ' separate alerts.</div></div>';
+        el.innerHTML = '<div class="inc-wrap"><div><div class="hint" style="margin-bottom:8px">Causal evidence trail (raw facts first → interpretation as headline)</div><div class="tl">' + tl + '</div></div>' +
+          '<div><div class="hint" style="margin-bottom:8px">What actually reaches the phone — one evolving card</div>' + card + '</div></div>';
+      }
+
       function evidenceCards() {
         var cards = [];
         STATE.holdings.forEach(function (h) {
           var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol];
           var isThesis = !!(srv && srv.thesis_break);
           var kind = isThesis ? (srv.kind || "thesis") : "move";
-          var tier = isThesis ? srv.tier : tierOf(absZ);
+          var confirmed = Number(h.rvol) >= 2;
+          // crypto & crypto-linked: higher bar (×1.25) + demote unconfirmed moves, matching the feed
+          var cryptoA = !!(srv && srv.asset_class === "crypto");
+          var thr = cryptoA ? { surface: TH.surface * 1.25, push: TH.push * 1.25, force: TH.force * 1.25 } : TH;
+          var tier = isThesis ? srv.tier : tierOf(absZ, thr);
+          if (cryptoA && !isThesis && !confirmed) { if (tier === "P0") tier = "P1"; else if (tier === "P1") tier = "P2"; }
           if (!tier || tier === "—") return;
           var score = isThesis ? srv.score : Math.round(100 * (1 - Math.exp(-absZ / 1.5)));
-          var confirmed = Number(h.rvol) >= 2; var headline, why, sigId;
+          var headline, why, sigId;
           if (srv && (isThesis || srv.tier)) { headline = srv.headline; why = srv.why; sigId = srv.signal_id; }
           if (!headline) { headline = h.symbol + " " + pct(h.ret_pct) + " (" + Number(h.z).toFixed(1) + "σ), idiosyncratic " + Number(h.residual_z).toFixed(1) + "σ" + (confirmed ? ", volume " + Number(h.rvol).toFixed(1) + "× avg" : ", no volume confirm");
             why = tier === "P0" ? "Large idiosyncratic move not explained by the market." : tier === "P1" ? "Notable single-name move beyond its residual-vol range." : "Elevated move, watching for confirmation."; }
           if (!sigId) sigId = h.symbol + "_" + String(STATE.overview.as_of || "").replace(/-/g, "");
-          cards.push({ h: h, tier: tier, kind: kind, score: score, headline: headline, why: why, sigId: sigId });
+          cards.push({ h: h, tier: tier, kind: kind, score: score, headline: headline, why: why, sigId: sigId, crypto: cryptoA, gated: cryptoA && !isThesis && !confirmed });
         });
         cards.sort(function (a, b) { return b.score - a.score; });
         return cards;
@@ -313,7 +383,9 @@
           var badge = c.kind === "catalyst" ? '<span class="badge t-THESIS">CATALYST · ' + c.tier + "</span>"
             : c.kind === "thesis" ? '<span class="badge t-THESIS">THESIS BREAK · ' + c.tier + "</span>"
             : '<span class="badge t-' + c.tier + '">' + c.tier + "</span>";
-          return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span></div></div>";
+          var cchip = c.crypto ? ' <span class="chip-thesis ts-strained" title="crypto/crypto-linked: higher bar ×1.25 + volume confirm required">crypto gate</span>' : "";
+          var gnote = c.gated ? '<span title="unconfirmed crypto move — demoted one tier">crypto·unconfirmed → demoted</span>' : "";
+          return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + cchip + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span>" + (gnote ? "<span>" + gnote + "</span>" : "") + "</div></div>";
         }).join("");
         var p0 = cards.filter(function (c) { return c.tier === "P0"; }).length, p1 = cards.filter(function (c) { return c.tier === "P1"; }).length, p2 = cards.filter(function (c) { return c.tier === "P2"; }).length;
         document.getElementById("ctrlSummary").innerHTML = "At these thresholds: <b>" + (p0 + p1) + "</b> would push (" + p0 + " P0 · " + p1 + " P1), " + p2 + " surface only.";
@@ -516,7 +588,7 @@
         try { pickVar(flat(await readJson(FEED + "mnav/rows/@last/12")), variant).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
         try { STATE.digest = pickVar(flat(await readJson(FEED + "digest/message/@last/2")), variant)[0]; } catch (e) { STATE.digest = null; }
         if (STATE.overview) renderOverview(STATE.overview);
-        renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderMonChips(); renderSearch("");
+        renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderIncident(); renderMonChips(); renderSearch("");
       }
       (async function () {
         try {

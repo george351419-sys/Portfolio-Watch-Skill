@@ -706,6 +706,19 @@ extreme percentiles; large exchange inflows suggest sell pressure; ETF flows
 diverge from price; stablecoin peg breaks; liquidity deteriorates; an exploit or
 governance attack occurs; or major unlocks approach.
 
+**Crypto gate (stricter tiering).** Crypto and crypto-linked names are small-sample
+and high-variance — the backtest confirms wider tails and thinner history — so they
+carry a **higher bar and a confirmation requirement**, not the equity defaults:
+- **Thresholds ×1.25.** kSurface/kPush/kForce are inflated 25% for crypto assets, on
+  top of the usual t-quantile / cold-start inflation.
+- **Confirmation to page.** An unconfirmed crypto price move (no volume ≥2× and no
+  OI/funding corroboration) is **demoted one tier** — it can surface in the interface
+  but won't page as P0/P1 on magnitude alone.
+- **Thesis is exempt.** A broken price/proxy or catalyst thesis is high-conviction and
+  still escalates straight to P0 (e.g. MSTR decoupling from BTC), regardless of the gate.
+This is implemented in the feed (`asset_class`, `crypto_gated` on each signal) and
+mirrored client-side so the interface's threshold sliders stay consistent.
+
 Crypto noise: low-quality social rumors, wash-trading volume, moves isolated to
 illiquid venues, whale transfers between known internal wallets, meme bursts
 without liquidity confirmation.

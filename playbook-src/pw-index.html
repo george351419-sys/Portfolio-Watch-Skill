@@ -187,6 +187,7 @@
           <span class="lbl">· Crypto microstructure</span> — perp funding &amp; open interest for crypto-linked names.<br/>
           <span class="lbl">· Semiconductor cycle</span> — TrendForce DXI memory index for semis.</p>
           <p><span class="lbl">Benchmark by asset class.</span> Each holding is measured against the right ruler and endpoint: <b>US stocks</b> → SPY / sector ETF (OLS β, residual vol); <b>crypto &amp; crypto-linked</b> → BTC (spot + perp funding); <b>ETFs</b> → their own daily bars. New names are auto-profiled; brand-new listings enter a cold-start path (sector-median prior + high-frequency bootstrap).</p>
+          <p><span class="lbl">Crypto gate.</span> Crypto &amp; crypto-linked names are small-sample and high-variance (our backtest shows it), so they get a <b>higher bar (×1.25)</b> and must have <b>volume confirmation</b> to page — an unconfirmed crypto move is demoted one tier. A broken <b>thesis</b> is exempt (high-conviction): it still escalates straight to P0.</p>
         </div>
 
         <div class="sec-title">② Layered monitoring model</div>
@@ -356,15 +357,20 @@
           var absZ = Math.abs(Number(h.residual_z)); var srv = STATE.signalsBySym[h.symbol];
           var isThesis = !!(srv && srv.thesis_break);
           var kind = isThesis ? (srv.kind || "thesis") : "move";
-          var tier = isThesis ? srv.tier : tierOf(absZ);
+          var confirmed = Number(h.rvol) >= 2;
+          // crypto & crypto-linked: higher bar (×1.25) + demote unconfirmed moves, matching the feed
+          var cryptoA = !!(srv && srv.asset_class === "crypto");
+          var thr = cryptoA ? { surface: TH.surface * 1.25, push: TH.push * 1.25, force: TH.force * 1.25 } : TH;
+          var tier = isThesis ? srv.tier : tierOf(absZ, thr);
+          if (cryptoA && !isThesis && !confirmed) { if (tier === "P0") tier = "P1"; else if (tier === "P1") tier = "P2"; }
           if (!tier || tier === "—") return;
           var score = isThesis ? srv.score : Math.round(100 * (1 - Math.exp(-absZ / 1.5)));
-          var confirmed = Number(h.rvol) >= 2; var headline, why, sigId;
+          var headline, why, sigId;
           if (srv && (isThesis || srv.tier)) { headline = srv.headline; why = srv.why; sigId = srv.signal_id; }
           if (!headline) { headline = h.symbol + " " + pct(h.ret_pct) + " (" + Number(h.z).toFixed(1) + "σ), idiosyncratic " + Number(h.residual_z).toFixed(1) + "σ" + (confirmed ? ", volume " + Number(h.rvol).toFixed(1) + "× avg" : ", no volume confirm");
             why = tier === "P0" ? "Large idiosyncratic move not explained by the market." : tier === "P1" ? "Notable single-name move beyond its residual-vol range." : "Elevated move, watching for confirmation."; }
           if (!sigId) sigId = h.symbol + "_" + String(STATE.overview.as_of || "").replace(/-/g, "");
-          cards.push({ h: h, tier: tier, kind: kind, score: score, headline: headline, why: why, sigId: sigId });
+          cards.push({ h: h, tier: tier, kind: kind, score: score, headline: headline, why: why, sigId: sigId, crypto: cryptoA, gated: cryptoA && !isThesis && !confirmed });
         });
         cards.sort(function (a, b) { return b.score - a.score; });
         return cards;
@@ -377,7 +383,9 @@
           var badge = c.kind === "catalyst" ? '<span class="badge t-THESIS">CATALYST · ' + c.tier + "</span>"
             : c.kind === "thesis" ? '<span class="badge t-THESIS">THESIS BREAK · ' + c.tier + "</span>"
             : '<span class="badge t-' + c.tier + '">' + c.tier + "</span>";
-          return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span></div></div>";
+          var cchip = c.crypto ? ' <span class="chip-thesis ts-strained" title="crypto/crypto-linked: higher bar ×1.25 + volume confirm required">crypto gate</span>' : "";
+          var gnote = c.gated ? '<span title="unconfirmed crypto move — demoted one tier">crypto·unconfirmed → demoted</span>' : "";
+          return '<div class="card sig tier-' + c.tier + (isT ? " thesis" : "") + '" id="sig-' + esc(c.sigId) + '"><div class="sig-head"><span class="sig-sym">' + esc(c.h.symbol) + "</span>" + badge + cchip + '<span class="sig-score">score ' + c.score + "</span></div><div class=\"sig-line\">" + esc(c.headline) + '</div><div class="sig-why">' + esc(c.why) + '</div><div class="sig-meta"><span>move ' + pct(c.h.ret_pct) + "</span><span>" + Number(c.h.z).toFixed(1) + "σ</span><span>idiosyncratic " + Number(c.h.residual_z).toFixed(1) + "σ</span><span>RVOL " + (c.h.rvol == null ? "—" : Number(c.h.rvol).toFixed(1) + "×") + "</span><span>weight " + Math.round(c.h.weight * 100) + "%</span>" + (gnote ? "<span>" + gnote + "</span>" : "") + "</div></div>";
         }).join("");
         var p0 = cards.filter(function (c) { return c.tier === "P0"; }).length, p1 = cards.filter(function (c) { return c.tier === "P1"; }).length, p2 = cards.filter(function (c) { return c.tier === "P2"; }).length;
         document.getElementById("ctrlSummary").innerHTML = "At these thresholds: <b>" + (p0 + p1) + "</b> would push (" + p0 + " P0 · " + p1 + " P1), " + p2 + " surface only.";
