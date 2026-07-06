@@ -14,7 +14,7 @@ description: >-
   Output is monitoring and explanation, not investment advice.
 metadata:
   author: portfolio-watch-skill
-  version: v2.1.0
+  version: v2.1.1
   builds_on: alva
 ---
 
@@ -463,8 +463,28 @@ violated logic, not just the price. The portfolio lens gains a *thesis-health* r
 
 ## The Interface (Playbook)
 
-Live-read HTML over the feeds (never hardcode values). Five views, top-down by
-what the user cares about most:
+Live-read HTML over the feeds (never hardcode values).
+
+**Required tab structure — build all four (this is not optional).** The product's
+promise is "usable *and* transparent, not a black box," so the interface must expose
+its reasoning, not just its output:
+
+- **Watch** — the live dashboard (the five content views below).
+- **Incident** — for a chosen P0, show how the raw facts (price → volume → options →
+  smart-money → thesis) fuse into a *single evolving card* with minimal buzzes
+  (visualizes Narrative Fusing + Silent Update).
+- **Theory** — the methodology in plain language: the layered model, the three-check
+  gate, the noise rules, the ranking, and thesis-linked monitoring. So an adopter
+  understands *why*.
+- **Formulas** — the exact math (adaptive baseline, residual-vol z, t-thresholds,
+  FDR, the 0–100 score). So a reviewer can audit it.
+
+Theory and Formulas are **static explanatory content authored from this spec** — they
+don't read the feed, so include them even on a minimal build. (A rebuild that ships
+only the Watch dashboard is incomplete: it loses the transparency that differentiates
+this product.)
+
+The **Watch** tab holds five content views, top-down by what the user cares about most:
 
 1. **Portfolio Overview** — today's return vs normal band, estimated P&L,
    top contributors/detractors, active P0/P1/P2 counts, market/sector context,
@@ -623,8 +643,9 @@ then equal-weight impact, and prompt the user to add weights.
   `avg_vol`, and capability flags per holding; crypto / crypto-linked recognized.
 - Watch feed emitted ≥1 scored record; three-check gate, noise filters, ranking,
   and merge rules demonstrably applied (test with a known past move).
-- Interface has all five views rendering live feed data; missing/stale data
-  labeled; screenshot verifies.
+- Interface has **all four tabs** — Watch (five content views rendering live feed
+  data), Incident, Theory, Formulas; missing/stale data labeled; screenshot verifies.
+  A Watch-only build is incomplete.
 - Every alert body carries a working `#sig-<id>` deep link.
 - Alert enabled; a real run wrote a fresh sidecar record (or a correct
   `<|SKIP_NOTIFICATION|>` on a quiet tick).
