@@ -423,7 +423,14 @@
         var syms;
         if (!q) { syms = SAMPLES.filter(function (s) { return pool.indexOf(s) >= 0; }); pool.forEach(function (s) { if (syms.indexOf(s) < 0 && syms.length < 8) syms.push(s); }); }
         else { syms = pool.filter(function (s) { return s.indexOf(q) === 0; }).sort().slice(0, 12); }
-        el.innerHTML = syms.length ? syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("") : '<span class="hint">no match in the computed universe — the feed pre-computes ~24 liquid names; any other ticker is added too, and profiled on the next run</span>';
+        var html = syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("");
+        var validTicker = /^[A-Z][A-Z0-9.\-]{0,5}$/.test(q);
+        var exact = syms.indexOf(q) >= 0 || STATE.monitored.indexOf(q) >= 0;
+        if (validTicker && !exact) {
+          html += '<span class="res-chip" data-add="' + q + '" style="border-style:dashed">+ Add ' + q + ' <span class="hint" style="font-size:11px">· compute live</span></span>';
+        }
+        if (!html) { html = q ? '<span class="hint">type a ticker symbol (e.g. NFLX) to add it</span>' : '<span class="hint">the feed pre-computes ~24 liquid names for instant preview — or type any ticker to add it</span>'; }
+        el.innerHTML = html;
         el.querySelectorAll("[data-add]").forEach(function (n) { n.addEventListener("click", function () { udfCall("add", n.getAttribute("data-add")); }); });
       }
 

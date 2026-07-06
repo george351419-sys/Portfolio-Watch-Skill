@@ -30,7 +30,7 @@ tapping it deep-links to this exact card.
 
 ![Thesis break — live on the Alva Playbook](assets/thesis-break-demo.png)
 
-*Live Playbook · real MSTR/BTC data · web-push alert delivered. The clever part:
+*Live Playbook · real MSTR/BTC data · alert delivered to Discord + web push. The clever part:
 this reuses the same "ruler" the system already uses to spot unusual single-stock
 moves — just pointed at Bitcoin instead of the market. Same thermometer, different
 spot, completely different meaning. (Plain-language write-up in the
@@ -64,7 +64,7 @@ The full spec is one pasteable file, [`portfolio-watch/SKILL.md`](portfolio-watc
 
 | Highlight | What it is | Where |
 |---|---|---|
-| **Information collection — six cross-checking sources** | Price/volume · events & filings · **prediction markets (Polymarket)** · **smart money (insider/congress)** · **options-implied (IV/expected-move/skew)** · **crypto microstructure (perp funding/OI)** · **semiconductor cycle (DXI)**. Signal from corroboration, not one feed. | SKILL §Dimensions, §Thesis-Linked, Layer C |
+| **Information collection — cross-checking sources** | Price/volume · events & filings · **prediction markets (Polymarket)** · **smart money (insider/congress)** · **options-implied (IV/expected-move/skew)** · **crypto microstructure (perp funding/OI)** · **semiconductor cycle (DXI)**. Signal from corroboration, not one feed. | SKILL §Dimensions, §Thesis-Linked, Layer C |
 | **Asset-class-specific benchmarks** | Each holding measured against the right ruler + endpoint: US stocks → SPY/sector-ETF (OLS β, residual vol); crypto & crypto-linked → BTC (spot + perp funding); ETFs → own bars; new listings → cold-start prior + HF bootstrap. | SKILL §Step 2, Appendix A |
 | **Layered monitoring model** | A price · B events/filings · C information/narrative · D portfolio — plus portfolio-level **context overlays** (macro, sector, smart-money) that never add per-stock noise. | SKILL §Step 3 |
 | **Three-check gate for a real move** | Statistically significant (own adaptive σ, t-quantile) → **idiosyncratic** (residual vs benchmark) → confirmed (volume/cause). | SKILL §Step 4 |
@@ -125,8 +125,8 @@ notes/                        Working trail (not deliverables)
 ## What actually got built on Alva (deliverable 2)
 
 - **Two feeds** — `pw-profile` (adaptive per-holding baseline: EWMA/MAD vol, OLS β, residual vol σ_ε; cold-start prior) → `pw-watch` (residual-vol z-scores, FDR, hysteresis, bounded 0–100 scoring, quiet-by-default `notify/message`).
-- **Interface** — **three tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist, each with **its own thresholds**, over an on-feed universe), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
-- **Alert** — web push delivered end-to-end (status = sent) with a deep link that lands on the matching card. Verified.
+- **Interface** — **three tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist — ~24 liquid names preview instantly, and any other symbol is added and profiled live via the UDF — each with **its own thresholds**), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
+- **Alert** — delivered end-to-end to **Discord + web push** (status = sent) with a deep link that lands on the matching card. Verified via `notification-history`.
 - **Demo pin** — the Playbook is pinned to the **2024-11-21/22** session so two real thesis signals show at once: **MSTR** (price thesis — BTC +4.3% but MSTR −16.2% → −4.8σ leverage-thesis break, P0) and **ITB** (catalyst thesis via Polymarket — P(Dec Fed cut) fell 83%→60% → strained, P1). The watched set (NVDA/TSLA/AAPL/MSTR/ITB) is a live config. To run live: redeploy `pw-watch` without the `asof` arg.
 
 ## Reproducing the backtest
@@ -139,6 +139,6 @@ alva run --local-file backtest/pw-backtest.js --timeout-ms 550000 --max-heap-siz
 ## Honesty notes
 
 - The Playbook demo is at **daily cadence**; intraday/pre-market tightening lives in the Skill spec. Options/short-interest confirmers and per-sector fundamental templates are Skill capabilities the 3-stock demo doesn't fully exercise.
-- Telegram "Silent Update" (edit one card) needs a bot token (BYOD); the demo uses web push. The fusion **logic** is verified on the runtime; the editable-card **delivery** is documented and ready to wire.
+- Alerts are delivered to **Discord + web push** (verified, status = sent). Telegram/Slack use the identical pipeline (`feed_alert_ready` → `active_channel`), no code change. Telegram "Silent Update" (edit one card in place) is the one part needing a direct bot token (BYOD); its fusion **logic** is verified on the runtime, the editable-card **delivery** is documented and ready to wire.
 - Backtest precision ≈ 0.33 at 2.5σ (lift ~1.3×) is a real but **modest** edge — forward continuation is a weak signal in efficient markets. The product's job is **noise suppression + attention routing**, not price prediction; the backtest quantifies exactly why the confirmation layers (volume/news) matter.
 - All threshold parameters are **evidence-based starting points**, calibrated on historical replay and adjustable via the three sensitivity presets.

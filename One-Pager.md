@@ -159,8 +159,8 @@ interface and alerts both running:
 - **The rigor changed the conclusion, correctly**: switching to the residual-vol
   denominator lifted AAPL's idiosyncratic z on 2026-06-25 from −2.6σ (old,
   understated) to **−4.1σ**, and the tier from P1 to **P0**.
-- **Alert verified end-to-end**: web push, status = sent, with a deep link that
-  lands on the matching interface card.
+- **Alert verified end-to-end**: delivered to **Discord + web push**, status =
+  sent, with a deep link that lands on the matching interface card.
 - **Fusion engine verified on the runtime**: an NVDA 3-event timeline collapses
   to one evolving card, buzzes 3 → 2.
 

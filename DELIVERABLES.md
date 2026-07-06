@@ -46,7 +46,7 @@ Three tabs — **Watch · Theory · Formulas**:
   (deep-link anchors) → holdings grid (each tile enriched with mNAV / KOL / options
   / crypto; **click → War-Room** modal aggregating a holding's full signal stack) →
   portfolio lens.
-- **Theory:** the full methodology (six sources + asset-class benchmarks, layered
+- **Theory:** the full methodology (the cross-checking sources + asset-class benchmarks, layered
   model, three-check gate, noise rules, ranking, thesis).
 - **Formulas:** the exact math.
 
@@ -57,8 +57,8 @@ Three tabs — **Watch · Theory · Formulas**:
 - Watched set is a user-owned config (5 holdings), editable by Agent chat **or** in
   the UI (UDF `updateWatchlist`, enabled).
 - Cronjobs active: `pw-watch` (push-notify) + `pw-profile`.
-- Personal alert subscribed; **web push delivered end-to-end** (status = sent) with
-  a deep link back to the matching card.
+- Personal alert subscribed; **delivered end-to-end to Discord + web push** (status =
+  sent) with a deep link back to the matching card.
 - Pinned creator's note inviting remix; discovery tags + description set.
 
 ## Rigor & validation
