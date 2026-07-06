@@ -5,6 +5,8 @@ Playbook with a live interface and quiet, ranked alerts — it decides which
 dimensions to watch, what's a real move vs noise, and how to rank signals, so it
 works on a portfolio it has never seen.
 
+> 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
+
 ---
 
 ## ✨ Highlight — watch the *thesis*, not just the market
