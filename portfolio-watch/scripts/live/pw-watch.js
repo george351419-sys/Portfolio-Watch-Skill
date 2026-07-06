@@ -52,6 +52,19 @@ async function loadThesis() {
     return m;
   } catch (e) { return { MSTR: { ref: "BTC", refType: "crypto", type: "leverage", label: "leveraged BTC play" } }; }
 }
+// Onboarding: propose a monitorable buy-thesis from the holding's sector so the user
+// can confirm it in one tap (SKILL §Thesis-Linked). Each maps to the residual-vs-reference
+// engine that already exists — a benchmark asset + a plain-language reason.
+function suggestThesis(sector, sym) {
+  const s = String(sector || "").toLowerCase();
+  if (/crypto/.test(s)) return { ref: "BTC", refType: "crypto", type: "leverage", label: "a leveraged Bitcoin play — it should track BTC, amplified" };
+  if (/semiconduct|semi/.test(s)) return { ref: "SMH", refType: "stock", type: "proxy", label: "a leveraged bet on the semis — it should track SMH, amplified" };
+  if (/home|reit|real estate|construc/.test(s)) return { ref: "XHB", refType: "stock", type: "proxy", label: "a bet on homebuilders — it should track XHB" };
+  if (/bank|financ|insur/.test(s)) return { ref: "XLF", refType: "stock", type: "proxy", label: "a bet on financials — it should track XLF" };
+  if (/software|internet|hardware|tech|media|comm/.test(s)) return { ref: "QQQ", refType: "stock", type: "proxy", label: "a bet on big-tech growth — it should track the Nasdaq (QQQ)" };
+  if (/auto|ev|energy|indust|material/.test(s)) return { ref: "SPY", refType: "stock", type: "proxy", label: "outperforms the market — it should beat the S&P (SPY)" };
+  return { ref: "SPY", refType: "stock", type: "proxy", label: "tracks the market — it should move with the S&P (SPY)" };
+}
 // macro-context overlay: liquid macro markets → portfolio-level heads-up (not per-stock alerts)
 async function loadMacro() {
   try {
@@ -78,11 +91,15 @@ async function cryptoBars(symbol, days, endT) {
   return (await getJson(url)).slice().reverse();
 }
 const isoDay = (ts) => new Date((typeof ts === "number" ? ts * 1000 : Date.parse(ts))).toISOString().slice(0, 10);
-// build UTC-date -> daily return map for a reference asset (crypto)
-async function refReturnMap(sym, endT) {
-  const b = await cryptoBars(sym, 120, endT);
+// build UTC-date -> daily return map for a reference asset (crypto OR stock/ETF ref,
+// so a thesis can be pinned to BTC, SMH, QQQ, SPY, … not just crypto)
+async function refReturnMap(sym, endT, refType) {
+  const b = refType === "stock" ? await dailyBars(sym, 120, endT) : await cryptoBars(sym, 120, endT);
   const m = {};
-  for (let i = 1; i < b.length; i++) m[isoDay(b[i].time_open)] = (b[i].price_close - b[i - 1].price_close) / b[i - 1].price_close;
+  for (let i = 1; i < b.length; i++) {
+    const day = isoDay(refType === "stock" ? b[i].time_close : b[i].time_open);
+    m[day] = (b[i].price_close - b[i - 1].price_close) / b[i - 1].price_close;
+  }
   return m;
 }
 function olsBetaResid(pairs) {
@@ -157,7 +174,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   const refMaps = {};
   for (const sym of Object.keys(THESIS)) {
     const t = THESIS[sym];
-    if (t.type !== "catalyst" && t.ref && !refMaps[t.ref]) { try { refMaps[t.ref] = await refReturnMap(t.ref, asof); } catch (e) { refMaps[t.ref] = null; } }
+    if (t.type !== "catalyst" && t.ref && !refMaps[t.ref]) { try { refMaps[t.ref] = await refReturnMap(t.ref, asof, t.refType); } catch (e) { refMaps[t.ref] = null; } }
   }
 
   // ---- catalyst theses: Polymarket P(event) up to asof → collapse signal ----
@@ -529,6 +546,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       thesis_label: th ? th.label : "", thesis_ref: th ? th.ref : "",
       thesis_corr: th && th.kind !== "catalyst" ? round(th.corr, 2) : null,
       thesis_state: th ? (th.broke ? "BROKEN" : th.strained || th.V >= 1.2 ? "strained" : "intact") : "",
+      ...(THESIS[p.symbol] ? {} : (function () { const sg = suggestThesis(p.sector, p.symbol); return { sugg_ref: sg.ref, sugg_reftype: sg.refType, sugg_type: sg.type, sugg_label: sg.label }; })()),
     });
     if (surfaced) {
       signals.push({
@@ -592,7 +610,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   feed.def("holdings", { rows: makeDoc("Holdings Grid", "Per-holding state", [
     str("symbol"), str("name"), num("weight"), num("price"), num("ret_pct"), num("z"), num("residual_z"), num("rvol"),
     num("dd_from_high_pct"), num("beta"), num("sigma_eps_pct"), str("tier"), bool("cold_start"), bool("near_52w_high"), bool("near_52w_low"),
-    str("thesis_label"), str("thesis_ref"), num("thesis_corr"), str("thesis_state")]) });
+    str("thesis_label"), str("thesis_ref"), num("thesis_corr"), str("thesis_state"),
+    str("sugg_ref"), str("sugg_reftype"), str("sugg_type"), str("sugg_label")]) });
   feed.def("signals", { items: makeDoc("Ranked Signals", "Surfaced real-moves", [
     str("signal_id"), str("symbol"), str("name"), str("tier"), num("score"), str("kind"), str("direction"), num("ret_pct"), num("z"),
     num("residual_z"), num("rvol"), num("weight"), bool("confirmed"), bool("market_driven"), bool("fdr_pass"), bool("cold_start"), bool("thesis_break"),

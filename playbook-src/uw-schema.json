@@ -1,7 +1,12 @@
 { "type": "object", "properties": {
-    "action": { "type": "string", "enum": ["add", "remove", "mode"] },
+    "action": { "type": "string", "enum": ["add", "remove", "mode", "thesis"] },
     "symbol": { "type": "string" },
     "name": { "type": "string" },
     "mode": { "type": "string", "enum": ["live", "demo"] },
-    "asof": { "type": "number" } },
+    "asof": { "type": "number" },
+    "ref": { "type": "string" },
+    "refType": { "type": "string", "enum": ["stock", "crypto"] },
+    "thesisType": { "type": "string" },
+    "label": { "type": "string" },
+    "clear": { "type": "boolean" } },
   "required": ["action"] }

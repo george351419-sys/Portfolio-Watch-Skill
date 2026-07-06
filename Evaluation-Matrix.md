@@ -58,6 +58,8 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 | Search-add **any** ticker (UDF profiles it live) | 🟢 | `updateWatchlist` add path |
 | **Demo/Live toggle** (instant, client-side) | 🟢 | dual-snapshot: each mode has its own bucket; the header switches buckets **instantly** for any viewer. The Live bucket refreshes on the scheduled feed run. |
 | Watched set as user-owned config (chat + UI) | 🟢 | `holdings.json` + `updateWatchlist` |
+| **Thesis onboarding** — auto-suggest a buy-thesis per holding, confirm in one tap | 🟢 | feed emits `sugg_*` per sector; UI "Arm a thesis" card → `updateWatchlist action:"thesis"` writes config |
+| Thesis vs **any benchmark** (BTC, SMH, QQQ, SPY…), not just crypto | 🟢 | `refReturnMap` handles stock & crypto refs |
 | **Portfolio auto-intake** from a linked account | 📝 · ⚠️ | designed (SKILL §Step 1, `alva portfolio summary`); **not live-demoed — demo account has no linked account** (`accounts → []`). Credible, unproven. |
 
 ## Asset coverage (tiered — no oversell)

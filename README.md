@@ -43,7 +43,10 @@ spot, completely different meaning. (Plain-language write-up in the
 [One-Pager](One-Pager.md).)*
 
 **How it scales:** you state the thesis or confirm a *proposed* one in one tap
-(never interrogated per holding), and add more anytime. Most theses reduce to a
+(never interrogated per holding), and add more anytime. **This is live in the UI** —
+an **"Arm a thesis"** card infers a likely buy-reason from each holding's sector and
+lets you confirm it in one click; the reference can be any benchmark (BTC, SMH, QQQ,
+SPY…), not just crypto. Most theses reduce to a
 few reusable invariant shapes (relationship / ranking / correlation / level), so
 new ones are added by parameters, not code — and a genuinely novel thesis is
 compiled by the in-loop LLM into a monitorable proxy, honestly bounded by the data

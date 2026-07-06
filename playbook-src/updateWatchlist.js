@@ -59,9 +59,24 @@ async function evidenceFor(sym, asof) {
     return { ok: true, action: "mode", mode, demo_asof, note: "Saved. Applies on the next pw-watch run." };
   }
 
+  // ---- Onboarding: confirm (or clear) a holding's buy-thesis, written to config ----
+  if (action === "thesis") {
+    const sym = String(a.symbol || "").toUpperCase().trim();
+    if (!sym) throw new Error("need symbol");
+    let c = { holdings: [] };
+    try { c = JSON.parse(String(await alfs.readFile(CONFIG))); } catch (e) {}
+    if (!Array.isArray(c.holdings)) c.holdings = [];
+    const h = c.holdings.find((x) => x.symbol === sym);
+    if (!h) throw new Error("not monitored: " + sym);
+    if (a.clear) { delete h.thesis; }
+    else { h.thesis = { ref: String(a.ref || "SPY").toUpperCase(), refType: a.refType || "stock", type: a.thesisType || "proxy", label: String(a.label || "") }; }
+    await alfs.writeFile(CONFIG, JSON.stringify(c, null, 2));
+    return { ok: true, action: "thesis", symbol: sym, thesis: h.thesis || null, note: "Saved — monitored from the next run." };
+  }
+
   const symbol = String(a.symbol || "").toUpperCase().trim();
   const asof = Number(a.asof) || Math.floor(Date.now() / 1000);
-  if (!symbol || (action !== "add" && action !== "remove")) throw new Error("need action=add|remove|mode");
+  if (!symbol || (action !== "add" && action !== "remove")) throw new Error("need action=add|remove|mode|thesis");
 
   let cfg = { holdings: [] };
   try { cfg = JSON.parse(String(await alfs.readFile(CONFIG))); } catch (e) {}

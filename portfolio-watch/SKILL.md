@@ -385,6 +385,13 @@ decision, not just reports a move.
 3. **Data-inferred** — as a fallback, propose the asset it historically tracks
    most tightly as a candidate.
 
+*Live in the Playbook:* the feed emits a **suggested thesis per holding** (from its
+sector → a benchmark + a plain-language reason), and the interface's **"Arm a thesis"**
+card lets the user **confirm in one tap** (writes the thesis to config via the
+`updateWatchlist` UDF; monitored from the next run). The reference can be **any
+benchmark** — crypto (BTC) *or* a stock/ETF (SMH, QQQ, XLF, SPY, …) — so the same
+residual-vs-reference engine arms a thesis for any holding, not just crypto-linked ones.
+
 **Elicitation rule — propose, don't interrogate.** Never ask a thesis question per
 holding (that violates the one-blocking-question rule and trains users to ignore
 you). Ask/propose only where a thesis materially changes monitoring *and* is

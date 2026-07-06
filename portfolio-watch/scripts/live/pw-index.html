@@ -133,6 +133,7 @@
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
         <div id="digest"></div>
+        <div id="onboard"></div>
         <div id="macro"></div>
         <div id="smartmoney"></div>
 
@@ -285,6 +286,31 @@
         document.getElementById("kpis").innerHTML = kpis.map(function (k) { return '<div class="card"><div class="kpi-label">' + k.label + '</div><div class="kpi-value">' + k.value + "</div>" + (k.sub || "") + "</div>"; }).join("");
         document.getElementById("marketNote").innerHTML = o.market_note ? '<div class="note">' + esc(o.market_note) + "</div>" : "";
         renderMode();
+      }
+      // Onboarding — infer a likely buy-thesis per holding, confirm in one tap.
+      function renderOnboard() {
+        var el = document.getElementById("onboard"); if (!el) return;
+        var need = STATE.holdings.filter(function (h) { return !(h.thesis_label && String(h.thesis_label).trim()) && h.sugg_label; });
+        if (!need.length) { el.innerHTML = ""; return; }
+        var can = udfReady();
+        var rows = need.map(function (h) {
+          return '<div class="wl-row"><span class="wl-sym">' + esc(h.symbol) + '</span>' +
+            '<span class="wl-mv" style="flex:1;min-width:180px">Looks like <b>' + esc(h.sugg_label) + '</b></span>' +
+            (can ? '<span class="res-chip" data-thesis="' + esc(h.symbol) + '" style="border:0.5px solid var(--main-m3)">✓ Confirm</span>' : '<span class="hint">sign in to arm</span>') + '</div>';
+        }).join("");
+        el.innerHTML = '<div class="card" style="border-left:3px solid #6d28d9"><div class="sm-h" style="color:#6d28d9">Arm a thesis · watch WHY you hold it</div>' +
+          '<div class="hint" style="margin:4px 0 8px">A broken buy-reason escalates straight to P0. We inferred a likely thesis from each holding’s sector — confirm in one tap, or just tell the Agent your own.</div>' + rows + "</div>";
+        el.querySelectorAll("[data-thesis]").forEach(function (n) { n.addEventListener("click", function () { confirmThesis(n.getAttribute("data-thesis")); }); });
+      }
+      async function confirmThesis(sym) {
+        if (!udfReady()) { setNote("Sign in to Alva to arm a thesis.", true); return; }
+        var h = STATE.holdings.filter(function (x) { return x.symbol === sym; })[0]; if (!h) return;
+        setNote("Arming thesis for " + sym + " …");
+        try {
+          await window.alva.udf.call("updateWatchlist", { action: "thesis", symbol: sym, ref: h.sugg_ref, refType: h.sugg_reftype, thesisType: h.sugg_type, label: h.sugg_label });
+          h.thesis_label = h.sugg_label; renderOnboard();
+          setNote("<b>" + esc(sym) + "</b> thesis armed — “" + esc(h.sugg_label) + "”. Monitored from the next feed run; a break escalates to P0.");
+        } catch (e) { setNote("Could not arm: " + esc(e && e.message ? e.message : String(e)), true); }
       }
       function renderMode() {
         var el = document.getElementById("modeBadge"); if (!el) return;
@@ -588,7 +614,7 @@
         try { pickVar(flat(await readJson(FEED + "mnav/rows/@last/12")), variant).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
         try { STATE.digest = pickVar(flat(await readJson(FEED + "digest/message/@last/2")), variant)[0]; } catch (e) { STATE.digest = null; }
         if (STATE.overview) renderOverview(STATE.overview);
-        renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderIncident(); renderMonChips(); renderSearch("");
+        renderDigest(); renderOnboard(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderIncident(); renderMonChips(); renderSearch("");
       }
       (async function () {
         try {
