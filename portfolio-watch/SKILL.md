@@ -177,6 +177,13 @@ to every holding when data exists; templates add asset-specific intelligence.
   an estimate/thesis change, is a signal.
 - Require multiple credible sources; suppress reposted old news, single-source
   rumors, and generic market commentary. Social velocity is a weak signal only.
+- **Prediction markets (Polymarket) as a structured event signal** — for events
+  with a *liquid* market (Fed decisions, elections, some catalysts), a sharp move
+  in the event probability is a quantified, often-early re-pricing. Use as a
+  **catalyst-thesis reference** (§Thesis-Linked) or, for macro, a portfolio-level
+  context note. Gate hard on liquidity (spread/volume); it is *not* a price
+  oracle. Coverage is lumpy (deep for macro/politics/sports, thin for single-name
+  catalysts), so it enriches — it is not a core pillar.
 
 ### Layer D — Portfolio (the user's real concern — the interface's first screen)
 Compute with `FeedAltra` so weights, drawdown, correlation, and contribution are
@@ -367,13 +374,27 @@ route to a template → fill parameters → live in seconds:
 | "X hedges my book" | **correlation** | sign of ρ(X, book) in drawdowns |
 | "hold XOM while oil > $70" | **level** | a named series crossing a threshold |
 | "X should move with gold" | **correlation** | rolling ρ decay toward 0 |
+| **"held betting event E happens"** | **catalyst** | **Polymarket P(E) — a material, liquid drop = thesis breaking** |
 
-For a genuinely novel shape (e.g. "I hold PFE for its Alzheimer's approval"), the
-in-loop LLM acts as a **thesis compiler**: translate the thesis into a *monitorable
-proxy* (approval thesis → FDA/PDUFA calendar + trial-readout news + the stock's
-reaction), then **check the data exists** — wire it if so, or honestly state what
-can and can't be watched rather than fake coverage. (Fundamental-level & catalyst
-theses need extra data → v2.)
+**Catalyst thesis via prediction markets (v1).** When the thesis *is* an event
+("I hold homebuilders betting the Fed cuts", "I hold PFE for the approval"), point
+the invariant at the **Polymarket probability** of that event (a real, daily,
+well-calibrated series for *liquid* markets). Treat the probability `p_t` as the
+reference series: watch the collapse from its thesis high-water `pHigh`
+(`relDrop = (pHigh − pNow)/pHigh`) and the vol-normalised worst move. A material
+adverse move on a **liquid** market (spread ≤ ~3¢, deep book) → thesis
+strained/broken → escalate. Same escalation logic as the price thesis, reference
+swapped from asset price to event probability. **Verified on real data**
+(`catalyst-thesis.js`): "held betting the Fed cuts by Jan 2024" → Polymarket
+P(cut) collapsed **51% → 1%** → thesis BROKEN → P0. Guardrails: **liquidity gate**
+(thin markets are noise — the highest-volume markets skew sports/politics, so gate
+hard and label confidence), probability is **not a price oracle**, and the
+market→holding mapping is **user-confirmed, not auto-guessed**.
+
+For a genuinely novel shape the in-loop LLM acts as a **thesis compiler**:
+translate the thesis into a monitorable proxy and check the data exists — wire it
+if so (Polymarket, calendars, filings), or honestly state what can and can't be
+watched. (Deep fundamental-level theses still need extra data → v2.)
 
 **Watch the invariant — the framing flips.** In the base model, idiosyncratic
 (residual) moves are the *signal* and market moves are rolled up as *noise*. A
@@ -574,12 +595,13 @@ then equal-weight impact, and prompt the user to add weights.
 
 ## Extensions (v2+)
 
-Fundamental-level & catalyst theses (need extra data) · multi-portfolio
-comparison · Altra-backed "what-if" (how a hedge would have changed drawdown) ·
-deeper on-chain / options microstructure.
+Deep fundamental-level theses (need per-KPI data) · Polymarket **macro-context
+overlay** (a sharp move in a liquid P(Fed cut)/election market → a portfolio-level
+heads-up on sensitive holdings) · multi-portfolio comparison · Altra-backed
+"what-if" · deeper on-chain / options microstructure.
 
-*(Proxy/leverage, relative-performance, and hedge theses are v1 — see
-§Thesis-Linked Monitoring.)*
+*(Proxy/leverage, relative-performance, hedge, **and catalyst (via Polymarket)**
+theses are v1 — see §Thesis-Linked Monitoring.)*
 
 ---
 

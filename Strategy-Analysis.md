@@ -329,6 +329,19 @@ $$
 
 这正是题设场景的量化实现。机制与基础引擎零冲突——只是换了基准、改了含义（违背而非新闻）、给了最高优先级。
 
+### 7b.35 催化剂型 thesis:参照换成预测市场概率（Polymarket，v1）
+
+当 thesis 本身是一个**事件**（"赌美联储降息""赌 FDA 获批"），参照序列不再是价格,而是 **Polymarket 对该事件的概率** $p_t$（真实、日频、对*流动*市场校准良好）。度量:
+
+$$
+\text{relDrop} = \frac{p_{\text{high}} - p_{\text{now}}}{p_{\text{high}}},\qquad
+z_p = \frac{\min_i (p_i - p_{i-w})}{\sigma(\Delta p)\sqrt{w}}
+$$
+
+$p_{\text{high}}$ 为 thesis 高水位,$\sigma(\Delta p)$ 为日频概率变动的波动率,$w{=}10$ 天窗口。**破裂判据**:$\text{relDrop}\ge 0.5$ 或 $p_{\text{now}}<0.1\,p_{\text{high}}$（概率被腰斩/塌陷）→ **P0**;$\text{relDrop}\ge 0.25$ 或 $z_p\le-2$ → strained。**关键护栏——流动性门**:仅当市场流动(spread $\le 3¢$、盘口深)才采信;薄市场是噪音(最高成交量的市场偏体育/政治)。概率**不是价格预言机**;市场→持仓映射**用户确认**。
+
+**真实数据验证**(`catalyst-thesis.js`):"赌美联储 2024 年 1 月降息" → Polymarket P(降息) 从 **51% 崩到 1%**(relDrop −99%)→ **thesis BROKEN → P0**。用绝对相对跌幅而非仅日频 z,因为概率 51%→1% 无论路径是否平滑都是明确破裂。
+
 ### 7b.4 thesis 类型 → 可监控不变量
 
 | thesis | 不变量 | 违背 |
