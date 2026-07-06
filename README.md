@@ -56,6 +56,30 @@ visible and adjustable — not a black box.
 
 ---
 
+## 🧭 Methodology highlights — what makes it good (for adopters & remixers)
+
+The full spec is one pasteable file, [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md). The distinctive parts:
+
+| Highlight | What it is | Where |
+|---|---|---|
+| **Information collection — six cross-checking sources** | Price/volume · events & filings · **prediction markets (Polymarket)** · **smart money (insider/congress)** · **options-implied (IV/expected-move/skew)** · **crypto microstructure (perp funding/OI)** · **semiconductor cycle (DXI)**. Signal from corroboration, not one feed. | SKILL §Dimensions, §Thesis-Linked, Layer C |
+| **Asset-class-specific benchmarks** | Each holding measured against the right ruler + endpoint: US stocks → SPY/sector-ETF (OLS β, residual vol); crypto & crypto-linked → BTC (spot + perp funding); ETFs → own bars; new listings → cold-start prior + HF bootstrap. | SKILL §Step 2, Appendix A |
+| **Layered monitoring model** | A price · B events/filings · C information/narrative · D portfolio — plus portfolio-level **context overlays** (macro, sector, smart-money) that never add per-stock noise. | SKILL §Step 3 |
+| **Three-check gate for a real move** | Statistically significant (own adaptive σ, t-quantile) → **idiosyncratic** (residual vs benchmark) → confirmed (volume/cause). | SKILL §Step 4 |
+| **Noise-filtering rules** | β roll-up (10 alerts → 1), Benjamini–Hochberg FDR (q=0.10), hysteresis ratchet, continuation suppression, 10b5-1 & liquidity gates. | SKILL §Step 5 |
+| **Multi-signal priority ranking** | 0–100 score `0.30·S + 0.25·I + 0.15·C + 0.10·η + 0.20·F − 0.40·P`, ranked by **impact on your money** not loudness; impact gate; tiers P0/P1/P2; same-ticker/same-cause merge; ≤4 P0 pushes/day. | SKILL §Step 6, `Strategy-Analysis.md` |
+| **Thesis-linked dynamic loop** | Watch the *reason* you bought (price proxy or a catalyst event); a broken thesis escalates to P0. | SKILL §Thesis-Linked |
+
+The same highlights are readable in-product on the Playbook's **Theory** tab, with the math on the **Formulas** tab.
+
+## 🔁 Adopt or remix this
+
+- **Use the Skill on your own portfolio:** paste [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) into the Alva chat (it's a single, self-contained file) and say *"watch my NVDA, TSLA, AAPL."* The watched set is a user-owned config you edit anytime (by chat or in the UI).
+- **Remix the Playbook:** `alva remix` the live Playbook, or lift the feed/UI sources from [`playbook-src/`](playbook-src/) (`pw-profile.js`, `pw-watch.js`, `pw-index.html`, `updateWatchlist.js`, `holdings.json`).
+- **Reuse a single capability:** the verified reference modules are standalone — `thesis-monitor.js`, `catalyst-thesis.js`, `alert-fusion.js`, `smart-money.js`, `options-signal.js`, `crypto-micro.js`.
+
+---
+
 ## The three required deliverables
 
 | # | Deliverable | Where |

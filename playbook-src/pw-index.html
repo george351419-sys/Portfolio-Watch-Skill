@@ -143,14 +143,59 @@
       <div class="pw-panel" id="tab-theory">
         <div class="sec-title">The idea</div>
         <div class="card method">
-          <p><span class="lbl">The job isn't to report the market — it's to route your attention.</span> A good watch surface separates real signal from market noise for a portfolio it has never seen, and only interrupts you when it's worth it.</p>
-          <p><span class="lbl">1 · Every threshold is relative.</span> A move is judged in each holding's <b>own</b> volatility, never a fixed %. NVDA −3% is a normal day; a quieter name −3% is news. This is what lets one rule set fit any portfolio.</p>
-          <p><span class="lbl">2 · Strip the market, then look.</span> Most of a stock's daily move is just the market moving. We remove that first and measure only what's left — the <i>idiosyncratic</i> part. A stock falling with the market isn't news; a stock falling <i>while the market rises</i> is.</p>
-          <p><span class="lbl">3 · One move isn't enough.</span> A real signal must be statistically unusual, idiosyncratic, and <i>confirmed</i> (by volume or an identifiable cause). A lone price blip with no volume and no reason is watched, not shouted about.</p>
-          <p><span class="lbl">4 · Kill the noise, keep the signal.</span> When the whole market drops, we send <b>one</b> portfolio-level line, not ten stock alerts. And because we watch many names at once, we cap the rate of false alarms statistically.</p>
-          <p><span class="lbl">5 · Rank by your money, not by loudness.</span> A 5σ move in a 1% position can matter less than a 2.5σ move in a 40% position. Alerts are ordered by impact on your portfolio.</p>
-          <p><span class="lbl">6 · Watch the thesis, not just the price.</span> If you hold something for a reason ("MSTR as a leveraged BTC play"), we watch whether that reason still holds. When it breaks, that's the most important alert there is — it challenges your decision.</p>
-          <p class="muted" style="font-size:12px">The exact formulas behind each point are in the <b>Formulas</b> tab.</p>
+          <p><span class="lbl">The job isn't to report the market — it's to route your attention.</span> Separate real signal from noise for a portfolio it has never seen, and only interrupt when it's worth it. Every threshold is <b>relative</b> to each holding's own volatility — that's what lets one rule set fit any portfolio. Full methodology &amp; parameters: <a href="https://github.com/george351419-sys/Portfolio-Watch-Skill/blob/main/portfolio-watch/SKILL.md" target="_blank" rel="noopener noreferrer">SKILL.md</a>. Formulas are in the next tab.</p>
+        </div>
+
+        <div class="sec-title">① Information collection — six cross-checking sources</div>
+        <div class="card method">
+          <p>Signal comes from <b>corroboration across independent lenses</b>, not one feed:</p>
+          <p><span class="lbl">· Price &amp; volume</span> — klines + market metrics (β, volatility, RVOL).<br/>
+          <span class="lbl">· Events &amp; filings</span> — earnings, guidance, dividends, 8-K, Form 4.<br/>
+          <span class="lbl">· Prediction markets (Polymarket)</span> — live event probabilities (Fed cuts, elections) for catalyst theses &amp; macro context.<br/>
+          <span class="lbl">· Smart money</span> — insider &amp; congress <i>open-market</i> buys/sells (10b5-1 excluded), cluster/CEO conviction.<br/>
+          <span class="lbl">· Options-implied</span> — ATM IV → expected move, IV-vs-realized premium, put−call skew.<br/>
+          <span class="lbl">· Crypto microstructure</span> — perp funding &amp; open interest for crypto-linked names.<br/>
+          <span class="lbl">· Semiconductor cycle</span> — TrendForce DXI memory index for semis.</p>
+          <p><span class="lbl">Benchmark by asset class.</span> Each holding is measured against the right ruler and endpoint: <b>US stocks</b> → SPY / sector ETF (OLS β, residual vol); <b>crypto &amp; crypto-linked</b> → BTC (spot + perp funding); <b>ETFs</b> → their own daily bars. New names are auto-profiled; brand-new listings enter a cold-start path (sector-median prior + high-frequency bootstrap).</p>
+        </div>
+
+        <div class="sec-title">② Layered monitoring model</div>
+        <div class="card method">
+          <p><span class="lbl">A · Price action</span> — abnormal move (σ), gap, RVOL, 52-week levels, slow trends.<br/>
+          <span class="lbl">B · Events &amp; filings</span> — earnings/guidance, corporate actions, insider/activist filings, macro calendar (only if the book is sensitive).<br/>
+          <span class="lbl">C · Information &amp; narrative</span> — material news, aggregated estimate/rating changes, prediction-market event probabilities.<br/>
+          <span class="lbl">D · Portfolio</span> — P&amp;L vs the book's own vol, drawdown, concentration drift, correlation convergence, factor/exposure drift.<br/>
+          <span class="lbl">+ Context overlays</span> — macro (rate/policy), sector (semi cycle), smart-money positioning — portfolio-level, never per-stock noise.</p>
+        </div>
+
+        <div class="sec-title">③ Three-check gate for a real move</div>
+        <div class="card method">
+          <p>A price move counts only after passing, in order:</p>
+          <p><span class="lbl">1 · Statistically significant</span> — in the holding's <i>own</i> adaptive σ (EWMA + robust MAD), threshold a t-quantile (small samples widen it automatically), not a fixed %.<br/>
+          <span class="lbl">2 · Idiosyncratic</span> — significant <i>after</i> removing the market: <code>z_idio = residual / residual-vol</code>. A stock falling with the market isn't news; falling while the market rises is.<br/>
+          <span class="lbl">3 · Confirmed</span> — abnormal volume or an identifiable cause (news / filing). A lone blip with no volume, no reason is watched, not shouted about.</p>
+          <p class="muted">Event/thesis signals (earnings, M&amp;A, thesis break) are real by construction and skip the statistical gate.</p>
+        </div>
+
+        <div class="sec-title">④ Noise filtering</div>
+        <div class="card method">
+          <p><span class="lbl">· β roll-up</span> — a market-wide drop collapses ten correlated alerts into <b>one</b> portfolio line, not ten.<br/>
+          <span class="lbl">· Batch false-positive control</span> — across N holdings × M dimensions, cap the false-discovery rate with Benjamini–Hochberg (q=0.10), not per-test α.<br/>
+          <span class="lbl">· Hysteresis ratchet</span> — enter at 2.5σ, hold until 1.5σ; a reported move doesn't re-fire unless it escalates a tier.<br/>
+          <span class="lbl">· Continuation &amp; cooldown</span> — an already-reported move grinding on is silent; 4-hour same-dimension cooldown.<br/>
+          <span class="lbl">· Source-specific gates</span> — 10b5-1 routine sales excluded; thin prediction/options markets gated on liquidity; low-liquidity pre-market ticks wait for the open.</p>
+        </div>
+
+        <div class="sec-title">⑤ Priority ranking when several fire</div>
+        <div class="card method">
+          <p><span class="lbl">Score 0–100</span> = 0.30·severity + 0.25·<b>portfolio-impact</b> + 0.15·confidence + 0.10·novelty + 0.20·confluence − 0.40·noise. Ranked by <b>impact on your money, not loudness</b> — a 5σ move in a 1% position can matter less than a 2.5σ move in a 40% position.</p>
+          <p><span class="lbl">Impact gate</span> — a &lt;2% position can't be P0 on price alone. <span class="lbl">Tiers</span> — <span class="badge t-P0">P0</span> push now / <span class="badge t-P1">P1</span> digest / <span class="badge t-P2">P2</span> interface. <span class="lbl">Merge</span> — same ticker's many signals fuse into one card; same cause across tickers rolls up to one line. <span class="lbl">Budget</span> — ≤4 P0 pushes/day (greedy by score); rather miss one medium signal than get muted.</p>
+        </div>
+
+        <div class="sec-title">⑥ Watch the thesis, not just the price</div>
+        <div class="card method">
+          <p>If you hold something for a <i>reason</i> — "MSTR as a leveraged BTC play", "ITB betting the Fed cuts" — the same residual math is re-pointed at that thesis's reference (BTC price, or a Polymarket event probability). When the reason breaks, that's the highest-order alert: it challenges your <b>decision</b>, not just reports a move, so it escalates straight to P0.</p>
+          <p class="muted" style="font-size:12px">Adopt or remix: paste <a href="https://github.com/george351419-sys/Portfolio-Watch-Skill/blob/main/portfolio-watch/SKILL.md" target="_blank" rel="noopener noreferrer">SKILL.md</a> into Alva, or remix this Playbook. Repo: <a href="https://github.com/george351419-sys/Portfolio-Watch-Skill" target="_blank" rel="noopener noreferrer">Portfolio-Watch-Skill</a>.</p>
         </div>
       </div>
 
