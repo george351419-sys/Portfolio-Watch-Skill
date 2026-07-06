@@ -26,24 +26,26 @@ raw result: [`backtest/results-event-aligned.json`](backtest/results-event-align
 | Metric | Result |
 |---|---|
 | **Real events evaluated** | **111** (42 earnings · 62 insider · 7 thesis) |
-| **Earnings covered** (a residual-vol alert in ±1 day) | **22 / 42 (52%)** — the rest are in-line, non-events the product *should* stay quiet on |
-| **Thesis breaks caught** | **7 / 7** |
-| **Unique catches** — events a **price-only** tracker would miss | **66** = 7 thesis-only + 59 smart-money-only (insiders positioning while price is quiet) |
-| **Alert concentration on earnings** | **4.73×** vs chance (`pw-event-study.js`, 125 events: P(earnings-window \| alert)=0.144 vs base 0.03) |
+| **Alert concentration on earnings** *(the headline metric)* | **4.73×** vs chance (`pw-event-study.js`, 125 events: P(earnings-window \| alert)=0.144 vs base 0.03) |
+| **Non-price events surfaced by non-price dimensions** | **66** = 7 thesis-only breaks + 59 smart-money/insider divergences — a price-only tracker wouldn't *represent* these at all |
+| **Earnings that produced a residual-vol alert** (in ±1 day) | **22 / 42 (52%)** — a neutral rate, not a target; the other ~half are in-line non-events the product *should* stay quiet on |
 | **Duplicate alerts avoided** (fusion) | ~**6%** of alert-days are consecutive same-symbol repeats, collapsed into one evolving card |
 | **Median lead / lag** | **+1 trading day** (earnings mostly report after-market, so the move — and our flag — land next day) |
 
-### How to read this
+### How to read this — and what NOT to over-claim
 
-- **Coverage is not supposed to be 100%.** ~half of earnings are in-line and don't
-  move the stock beyond its own noise band — surfacing those would be *noise*, not
-  signal. The product's job is to stay quiet on non-events and fire on the material
-  ones. 52% earnings coverage + **4.73× concentration** says: our alerts land on real
-  catalysts far more than chance, and skip the non-events.
-- **The 66 unique catches are the core product argument.** A fixed-% or price-only
-  tracker sees none of the 7 thesis breaks (price wasn't unusual vs the *market* — only
-  vs the *thesis benchmark*) and none of the 59 insider divergences (insiders buying
-  while price is calm). The extra dimensions exist precisely to catch these.
+- **The headline is the 4.73× concentration, not the 52%.** "52% of earnings produced
+  an alert" is a *neutral* descriptor, not evidence of quality on its own — half of
+  earnings are in-line and *shouldn't* fire. The number that carries weight is the
+  **concentration**: a price alert is 4.73× more likely to sit on an earnings window
+  than on a random day. That's an independent statement that alerts track catalysts.
+- **"Surfaced by non-price dimensions" is deliberately not "caught".** Insider events
+  are **coverage-by-construction** — the smart-money overlay reads the same Form 4 data,
+  so it necessarily represents them; this is *not* an independent hit-rate test. The
+  honest claim is narrow and still meaningful: **66 non-price events that a price-only
+  tracker has no dimension to represent** (7 thesis breaks — price wasn't unusual vs the
+  *market*, only vs the *thesis benchmark*; 59 insider divergences — insiders positioning
+  while price is calm). The value is *having these dimensions at all*, not a precision score.
 - **Low duplicate rate + same-/next-day timing** means when it does fire, it fires
   once, promptly, and doesn't spam.
 

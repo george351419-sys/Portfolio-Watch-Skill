@@ -75,10 +75,13 @@ silent-update are designed but not live-demoed** (no linked account / needs a bo
 
 Beyond price-continuation backtesting, the product is validated against **real events**
 ([`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)): **111 events** (earnings ·
-insider/Form 4 · thesis break) → **52% earnings coverage**, **66 catches a price-only
-tracker would miss** (thesis-only + smart-money divergences), **4.73× alert concentration**
-on earnings vs chance, ~6% duplicates, +1-day median timing. Honestly bounded to a recent
-~24-month window and sourceable event types (news/M&A/litigation endpoints unavailable).
+insider/Form 4 · thesis break). Headline: **4.73× alert concentration** on earnings vs
+chance. Plus **66 non-price events surfaced by non-price dimensions** (thesis-only +
+smart-money/insider divergences) a price-only tracker can't represent. (52% of earnings
+produced an alert — neutral; the rest are in-line non-events.) ~6% duplicates, +1-day
+timing. Honestly bounded: recent ~24-month window; sourceable event types only
+(news/M&A/litigation unavailable); insider is coverage-by-construction; P0/P1 precision
+is a lower bound.
 
 ## Rigor & validation
 

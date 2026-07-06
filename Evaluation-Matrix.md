@@ -82,13 +82,14 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 1. **Event-level evaluation — done for the sourceable event types (📊).** A
    **multi-type, event-aligned study** exists (`backtest/pw-event-aligned.js`,
    [`Event-Aligned-Evaluation.md`](Event-Aligned-Evaluation.md)): **111 real events**
-   (42 earnings · 62 insider/Form 4 · 7 thesis break) → 52% earnings coverage, **66
-   catches a price-only tracker would miss**, ~6% duplicates, +1-day median timing;
-   plus an earnings concentration of **4.73×** vs chance (`pw-event-study.js`). Genuine
-   evidence alerts route attention to real events, not price noise. ⚠️ **Bounded to a
-   recent ~24-month window and to sourceable event types** (earnings / Form 4 / thesis)
-   — news, M&A, litigation, guidance, exec-departure endpoints aren't available at our
-   tier, so those remain out of scope; P0/P1 precision is a lower bound.
+   (42 earnings · 62 insider/Form 4 · 7 thesis break). Headline: **4.73× earnings alert
+   concentration** vs chance (`pw-event-study.js`). Plus **66 non-price events surfaced
+   by non-price dimensions** a price-only tracker can't represent; ~6% duplicates,
+   +1-day timing. (52% of earnings produced an alert — a neutral rate, not a target.)
+   ⚠️ **Bounded to a recent ~24-month window and to sourceable event types** (earnings /
+   Form 4 / thesis) — news, M&A, litigation, guidance, exec-departure endpoints aren't
+   available at our tier. **Insider is coverage-by-construction** (not an independent
+   hit-rate); P0/P1 precision is a lower bound.
 2. **Per-source ablation** beyond price/volume/thesis (smart-money, options, mNAV,
    sentiment) needs point-in-time source histories to measure marginal precision.
 3. **Auto-intake** and **Telegram silent-update** are designed and partly verified but

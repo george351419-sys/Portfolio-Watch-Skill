@@ -168,12 +168,15 @@ Three complementary evidence layers — don't re-derive these, cite them:
 - **Ablation** (`backtest/pw-ablation.js`, §8.5) — the volume gate cuts alert volume
   **−26% at equal precision**; thesis adds ~24% unique P0 coverage.
 - **Event-aligned evaluation** (`backtest/pw-event-aligned.js`, `Event-Aligned-Evaluation.md`)
-  — anchored on **111 real events** (earnings · insider/Form 4 · thesis break): 52%
-  earnings coverage, **66 catches a price-only tracker would miss**, 4.73× earnings
-  concentration, ~6% duplicates, +1-day timing. This is the strongest evidence the
-  product routes attention to real events, not price noise. Honest scope: recent
-  ~24-month window, sourceable event types only (news/M&A/litigation endpoints
-  unavailable). If you extend it, add event types as those endpoints become available.
+  — anchored on **111 real events** (earnings · insider/Form 4 · thesis break). Headline:
+  **4.73× earnings alert concentration** (a price alert is 4.73× more likely to sit on an
+  earnings window than a random day). Plus **66 non-price events surfaced by non-price
+  dimensions** (7 thesis-only + 59 smart-money/insider divergences) a price-only tracker
+  can't represent. (52% of earnings produced an alert — a *neutral* rate, not a target.)
+  ~6% duplicates, +1-day timing. **Framing discipline:** lead with the concentration, not
+  the 52%; call insider *coverage-by-construction* (not an independent hit-rate); P0/P1
+  precision is a lower bound. Honest scope: recent ~24-month window, sourceable event
+  types only (news/M&A/litigation endpoints unavailable) — extend as endpoints appear.
 
 ## 9. How to extend or optimize (playbook for the next agent)
 
