@@ -230,6 +230,36 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip symbol */ }
   }
 
+  // ---- options-implied enrichment (expected move, IV premium, skew; current data) ----
+  const optRows = [];
+  async function atmIVf(sym, type) {
+    const dataArr = await getJson(BASE + "/api/v1/options/chain?symbol=" + sym + "&limit=250&contract_type=" + type +
+      "&start_expiration_date=" + (smNow + 14 * 86400) + "&end_expiration_date=" + (smNow + 45 * 86400));
+    const res = (dataArr[0] && dataArr[0].results) || [];
+    const withIV = res.filter((c) => c.implied_volatility > 0 && c.details && c.details.strike_price);
+    if (!withIV.length || !(res[0].underlying_asset && res[0].underlying_asset.price)) return null;
+    const spot = res[0].underlying_asset.price;
+    const atm = withIV.reduce((b, c) => Math.abs(c.details.strike_price - spot) < Math.abs((b ? b.details.strike_price : 1e9) - spot) ? c : b, null);
+    const days = Math.max(1, Math.round((Date.parse(atm.details.expiration_date) / 1000 - smNow) / 86400));
+    return { spot, iv: atm.implied_volatility, days };
+  }
+  for (const p of profiles) {
+    try {
+      const call = await atmIVf(p.symbol, "call"); if (!call) continue;
+      const put = await atmIVf(p.symbol, "put");
+      const iv = put ? (call.iv + put.iv) / 2 : call.iv;
+      const rvAnn = (p.sigma_ewma || p.sigma_base || 0.02) * Math.sqrt(252);
+      const expMove = iv * Math.sqrt(call.days / 365) * 100;
+      const premium = rvAnn > 0 ? iv / rvAnn : null;
+      const skew = put ? (put.iv - call.iv) * 100 : null;
+      let ost = "normal", onote = "";
+      if (premium != null && premium >= 1.3) { ost = "elevated"; onote = "IV " + round(iv * 100, 0) + "% is " + round(premium, 1) + "× realized — options bracing for a bigger move (often pre-catalyst)."; }
+      else if (skew != null && skew >= 5) { ost = "downside-skew"; onote = "Put IV exceeds call IV by " + round(skew, 0) + "pts — options pricing downside fear."; }
+      optRows.push({ date: asof * 1000, symbol: p.symbol, atm_iv_pct: round(iv * 100, 0), expected_move_pct: round(expMove, 1),
+        iv_premium: premium ? round(premium, 2) : null, skew_pts: skew != null ? round(skew, 0) : null, days: call.days, state: ost, note: onote });
+    } catch (e) { /* skip symbol */ }
+  }
+
   // ---- per holding evaluation ----
   const evals = [];
   for (const p of profiles) {
@@ -429,6 +459,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("factor"), str("label"), num("prob_now_pct"), num("change_pct"), num("z"), num("exposure_pct"), str("holdings"), str("note")]) });
   feed.def("smartmoney", { rows: makeDoc("Smart-money Positioning", "Insider open-market activity (trailing)", [
     str("symbol"), str("state"), num("buyers"), num("sellers"), num("buy_m"), num("sell_m"), str("note")]) });
+  feed.def("options", { rows: makeDoc("Options-implied", "Expected move, IV premium, skew per holding", [
+    str("symbol"), num("atm_iv_pct"), num("expected_move_pct"), num("iv_premium"), num("skew_pts"), num("days"), str("state"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -465,6 +497,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     if (universeRows.length) await ctx.self.ts("universe", "rows").append(universeRows);
     if (macroRows.length) await ctx.self.ts("macro", "rows").append(macroRows);
     if (smRows.length) await ctx.self.ts("smartmoney", "rows").append(smRows);
+    if (optRows.length) await ctx.self.ts("options", "rows").append(optRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.

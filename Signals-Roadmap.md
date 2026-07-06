@@ -59,6 +59,6 @@ where it is an explicit thesis reference.
 
 ## Status
 - Phase 1: ✅ DONE — smart-money.js verified (MSTR 10-insider cluster $31M, TSLA CEO $1B); live "Smart-money positioning" green context panel
-- Phase 2: pending
+- Phase 2: ✅ DONE — options-signal.js verified (MSTR ±22% expected move, 12pt downside skew); live per-holding options enrichment
 - Phase 3: pending
 - Phase 4: pending
