@@ -166,10 +166,10 @@ interface and alerts both running:
 
 ## Honest limits & next steps
 
-**Alerts / Telegram:** web push is verified end-to-end (delivered, `sent`, with a
-deep link back to the card). Telegram/Discord/Slack use the *same* pipeline —
-`feed_alert_ready` routes to whatever `active_channel` the user connects at
-alva.ai/settings, no code change; the demo account just hasn't linked one yet. The
+**Alerts / IM:** delivered end-to-end to **Discord** (channel `discord`, status
+`sent`) — the MSTR P0 thesis-break card with a deep link back to the interface;
+web push in parallel. The assignment names Telegram — same pipeline
+(`feed_alert_ready` → whatever `active_channel` the user connects), no code change. The
 "silent-update" single-card edit is the one part that needs a direct bot token
 (BYOD) — its fusion logic is verified on the runtime, the editable delivery is
 documented and ready to wire.

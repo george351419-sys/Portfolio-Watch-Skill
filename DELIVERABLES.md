@@ -76,12 +76,16 @@ Three tabs — **Watch · Theory · Formulas**:
 `options-signal.js` · `crypto-micro.js` · `fintwit-sentiment.js` · `mnav-lens.js` —
 each verified on real data. Live feed/UI sources in [`playbook-src/`](playbook-src/).
 
-## Honest gaps
+## IM delivery
 
-- **Telegram:** the assignment names Telegram; the demo uses **web push** (verified
-  end-to-end). Same pipeline — `feed_alert_ready` routes to whatever `active_channel`
-  the owner connects at alva.ai/settings, no code change. The demo account hasn't
-  linked one yet.
+- **Discord — delivered end-to-end.** The demo account connected Discord and a real
+  alert was delivered (channel = `discord`, status = `sent`): the MSTR P0 thesis-break
+  card with its deep link back to the interface. Web push is delivered in parallel.
+  The assignment names Telegram — the pipeline is identical (`feed_alert_ready` routes
+  to whatever `active_channel` the owner connects), so Telegram/Slack work the same way
+  with no code change.
+
+## Honest gaps
 - **Demo pin:** the Playbook is pinned to the 2024-11-21 session so the price/catalyst
   thesis breaks show; positioning signals (insider/options/crypto/sentiment/mNAV) use
   current data. To run fully live, redeploy `pw-watch` without the `asof` arg.
