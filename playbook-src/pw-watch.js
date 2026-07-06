@@ -260,6 +260,33 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip symbol */ }
   }
 
+  // ---- crypto microstructure: funding + OI for the crypto refs of crypto-linked holdings ----
+  const cryptoRows = [];
+  const cryptoRefs = {}; // ref symbol -> holdings it backs
+  for (const p of profiles) {
+    const t = THESIS[p.symbol];
+    const ref = t && t.refType === "crypto" ? t.ref : (String(p.sector || "").toLowerCase().indexOf("crypto") >= 0 ? "BTC" : null);
+    if (ref) { (cryptoRefs[ref] = cryptoRefs[ref] || []).push(p.symbol); }
+  }
+  for (const ref of Object.keys(cryptoRefs)) {
+    try {
+      const fr = await getJson(BASE + "/api/v1/crypto/funding-rate?symbol=" + ref + "&start_time=" + (smNow - 45 * 86400) + "&end_time=" + smNow + "&limit=300");
+      const oi = await getJson(BASE + "/api/v1/crypto/open-interest?symbol=" + ref + "&start_time=" + (smNow - 30 * 86400) + "&end_time=" + smNow + "&limit=200");
+      if (!fr.length) continue;
+      const rates = fr.map((x) => x.funding_rate);
+      const mAvg = rates.reduce((a, b) => a + b, 0) / rates.length;
+      const rsd = Math.sqrt(rates.reduce((s, x) => s + (x - mAvg) ** 2, 0) / (rates.length - 1)) || 1e-9;
+      const annual = rates[0] * 3 * 365 * 100, z = (rates[0] - mAvg) / rsd;
+      let oiChg = null; if (oi.length >= 8) { const v = oi.map((x) => x.sum_open_interest_value); oiChg = (v[0] - v[7]) / v[7] * 100; }
+      let cstate = "normal", cnote = "";
+      if (z >= 2 || annual >= 40) { cstate = "crowded-longs"; cnote = ref + " funding elevated (" + round(annual, 0) + "%/yr, " + round(z, 1) + "σ) — crowded longs, squeeze/mean-revert risk."; }
+      else if (z <= -2 || annual <= -20) { cstate = "capitulation"; cnote = ref + " funding deeply negative — shorts crowded / capitulation."; }
+      else if (oiChg != null && oiChg <= -12) { cstate = "deleveraging"; cnote = ref + " open interest fell " + round(oiChg, 0) + "% in a week — leverage flushing (liquidations)."; }
+      cryptoRows.push({ date: asof * 1000, ref, holdings: cryptoRefs[ref].join(", "), funding_annual_pct: round(annual, 0),
+        funding_z: round(z, 1), oi_change_pct: oiChg != null ? round(oiChg, 0) : null, state: cstate, note: cnote });
+    } catch (e) { /* skip */ }
+  }
+
   // ---- per holding evaluation ----
   const evals = [];
   for (const p of profiles) {
@@ -461,6 +488,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("symbol"), str("state"), num("buyers"), num("sellers"), num("buy_m"), num("sell_m"), str("note")]) });
   feed.def("options", { rows: makeDoc("Options-implied", "Expected move, IV premium, skew per holding", [
     str("symbol"), num("atm_iv_pct"), num("expected_move_pct"), num("iv_premium"), num("skew_pts"), num("days"), str("state"), str("note")]) });
+  feed.def("crypto", { rows: makeDoc("Crypto Microstructure", "Perp funding + OI for crypto refs", [
+    str("ref"), str("holdings"), num("funding_annual_pct"), num("funding_z"), num("oi_change_pct"), str("state"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -498,6 +527,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     if (macroRows.length) await ctx.self.ts("macro", "rows").append(macroRows);
     if (smRows.length) await ctx.self.ts("smartmoney", "rows").append(smRows);
     if (optRows.length) await ctx.self.ts("options", "rows").append(optRows);
+    if (cryptoRows.length) await ctx.self.ts("crypto", "rows").append(cryptoRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.
