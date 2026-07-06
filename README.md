@@ -12,6 +12,8 @@ works on a portfolio it has never seen.
 > 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
 >
 > 🤖 **Agents & maintainers:** read **[`AGENTS.md`](AGENTS.md)** — architecture, Alva primitives, the hard-won storage/deploy gotchas, and a step-by-step guide to extend or optimize safely.
+>
+> 🧭 **Iteration trajectory:** [`CHANGELOG.md`](CHANGELOG.md) — how the project evolved across review rounds (core build → signal sources → packaging → validation loop).
 
 ---
 
