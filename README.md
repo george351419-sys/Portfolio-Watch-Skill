@@ -6,6 +6,8 @@ dimensions to watch, what's a real move vs noise, and how to rank signals, so it
 works on a portfolio it has never seen.
 
 > 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
+>
+> 🤖 **Agents & maintainers:** read **[`AGENTS.md`](AGENTS.md)** — architecture, Alva primitives, the hard-won storage/deploy gotchas, and a step-by-step guide to extend or optimize safely.
 
 ---
 
@@ -101,6 +103,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 ## Full file map
 
 ```
+AGENTS.md                     Guide for AI agents & maintainers (architecture, gotchas, how to extend)
 portfolio-watch/SKILL.md      Deliverable 1 — the Skill (single, pasteable file)
 One-Pager.md                  Deliverable 3 — one-pager (bilingual, embeds assets/fig1-3)
 Strategy-Analysis.md          Math appendix — rigorous derivations (§7 = alert fusion)
