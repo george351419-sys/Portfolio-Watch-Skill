@@ -61,6 +61,14 @@ Three tabs — **Watch · Theory · Formulas**:
   sent) with a deep link back to the matching card.
 - Pinned creator's note inviting remix; discovery tags + description set.
 
+## What's proven vs specced
+
+Full honest status per capability (Live / Verified-runtime / Backtested / Specced /
+Known-limitation) + tiered asset coverage: **[`Evaluation-Matrix.md`](Evaluation-Matrix.md)**.
+Highlights: an **ablation** shows the volume gate cuts alert volume −26% at equal
+precision and thesis adds ~24% unique P0 coverage; **auto-intake and Telegram
+silent-update are designed but not live-demoed** (no linked account / needs a bot token).
+
 ## Rigor & validation
 
 - **Math** — adaptive baselines (EWMA + robust MAD), residual-vol z, t-thresholds,

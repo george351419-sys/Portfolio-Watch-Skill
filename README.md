@@ -102,7 +102,8 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 2. **[`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md)** — the actual Skill: intake → per-holding baseline → 4-layer monitoring → three-check gate → noise filters → 0–100 ranking → interface → alerts → cold-start & latency.
 3. **The live Playbook** (link above) — interface + a real delivered alert deep-linking back to the matching card.
 4. **[`Strategy-Analysis.md`](Strategy-Analysis.md)** — the math底稿: adaptive baselines (EWMA/MAD), residual-vol z, t-thresholds, FDR, hysteresis, the scoring algebra, cold-start, alert fusion, and thesis-linked escalation (§7b).
-5. **[`Backtest-Report.md`](Backtest-Report.md)** — historical replay & precision-recall calibration on 29 symbols (Mag7 + 20 untuned stocks + BTC/LTC), 37,837 days. Proves reusability and honestly bounds what "effective" means.
+5. **[`Backtest-Report.md`](Backtest-Report.md)** — historical replay & precision-recall calibration on 29 symbols (Mag7 + 20 untuned stocks + BTC/LTC), 37,837 days, **+ an ablation (§8.5): volume gate −26% alert volume at equal precision; thesis adds ~24% unique P0 coverage**.
+6. **[`Evaluation-Matrix.md`](Evaluation-Matrix.md)** — one-glance honest status of every capability (Live / Verified / Backtested / Specced / Known-limitation) + tiered asset coverage. Read this to see exactly what's proven vs designed.
 
 ## Full file map
 
