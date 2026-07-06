@@ -202,6 +202,34 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip */ }
   }
 
+  // ---- smart-money positioning (insider open-market buys, trailing, current data) ----
+  // Context overlay, not per-stock alerts: "who is backing this with their own money".
+  const smRows = [];
+  const smNow = Math.floor(Date.now() / 1000), smStart = smNow - 400 * 86400;
+  for (const p of profiles) {
+    try {
+      const raw = await getJson(BASE + "/api/v1/stocks/insider/transactions?symbol=" + p.symbol +
+        "&time_type=TRANSACTION_DATE&start_time=" + smStart + "&end_time=" + smNow + "&limit=500");
+      const seen = {}; const rows = raw.filter((x) => { const k = (x.owner_name || "") + "|" + x.transaction_date + "|" + x.amount + "|" + x.price; if (seen[k]) return false; seen[k] = 1; return true; });
+      const disc = (x) => x.is_10b51 !== true;
+      const notion = (x) => (parseFloat(x.amount) || 0) * (parseFloat(x.price) || 0);
+      const buys = rows.filter((x) => x.transaction_code === "P" && disc(x));
+      const sells = rows.filter((x) => x.transaction_code === "S" && disc(x));
+      const buyers = new Set(buys.map((x) => x.owner_name)), sellers = new Set(sells.map((x) => x.owner_name));
+      const buyM = buys.reduce((a, x) => a + notion(x), 0) / 1e6, sellM = sells.reduce((a, x) => a + notion(x), 0) / 1e6;
+      const ceoBuy = buys.some((x) => /CEO|Chief Exec/i.test(x.officer_title || ""));
+      let state = "quiet", note = "";
+      if ((buyers.size >= 2 || ceoBuy) && buyM > sellM) {
+        state = "cluster-buy";
+        note = buyers.size + " insider" + (buyers.size > 1 ? "s" : "") + " bought ~$" + buyM.toFixed(1) + "M open-market" + (ceoBuy ? " (incl. CEO)" : "") + ", none pre-planned — backing it with their own money.";
+      } else if (sellers.size >= 3 && sellM > 3 * buyM) {
+        state = "cluster-sell"; note = sellers.size + " insiders sold ~$" + sellM.toFixed(1) + "M (ex-10b5-1) — broad distribution.";
+      }
+      if (state !== "quiet") smRows.push({ date: asof * 1000, symbol: p.symbol, state, buyers: buyers.size, sellers: sellers.size,
+        buy_m: round(buyM, 1), sell_m: round(sellM, 1), note });
+    } catch (e) { /* skip symbol */ }
+  }
+
   // ---- per holding evaluation ----
   const evals = [];
   for (const p of profiles) {
@@ -399,6 +427,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("symbol"), num("price"), num("ret_pct"), num("z"), num("residual_z"), num("rvol"), num("beta")]) });
   feed.def("macro", { rows: makeDoc("Macro Context", "Portfolio-level prediction-market overlay", [
     str("factor"), str("label"), num("prob_now_pct"), num("change_pct"), num("z"), num("exposure_pct"), str("holdings"), str("note")]) });
+  feed.def("smartmoney", { rows: makeDoc("Smart-money Positioning", "Insider open-market activity (trailing)", [
+    str("symbol"), str("state"), num("buyers"), num("sellers"), num("buy_m"), num("sell_m"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -434,6 +464,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     await ctx.self.ts("holdings", "rows").append(holdings);
     if (universeRows.length) await ctx.self.ts("universe", "rows").append(universeRows);
     if (macroRows.length) await ctx.self.ts("macro", "rows").append(macroRows);
+    if (smRows.length) await ctx.self.ts("smartmoney", "rows").append(smRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.

@@ -32,6 +32,10 @@
       .macro-h { font-size: 11px; font-weight: 500; color: #2563eb; letter-spacing: 0.03em; text-transform: uppercase; }
       .macro-note { font-size: 13px; color: var(--text-n9); margin-top: 4px; line-height: 1.5; }
       .macro-sub { font-size: 11px; color: var(--text-n5); margin-top: 4px; }
+      .sm-card { margin-top: var(--spacing-s); border-left: 3px solid var(--main-m3); }
+      .sm-h { font-size: 11px; font-weight: 500; color: var(--main-m3); letter-spacing: 0.03em; text-transform: uppercase; }
+      .sm-row { font-size: 13px; color: var(--text-n9); margin-top: 6px; }
+      .sm-sell { border-left-color: var(--main-m4); }
       .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
       .t-P0 { background: rgba(220,38,38,0.12); color: var(--main-m4); }
       .t-P1 { background: rgba(217,119,6,0.14); color: #b45309; }
@@ -100,6 +104,7 @@
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
         <div id="macro"></div>
+        <div id="smartmoney"></div>
 
         <div class="sec-title">Monitored set · add or remove any ticker</div>
         <div class="card">
@@ -165,7 +170,7 @@
       var USER = "george351419";
       var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
       var TH = { surface: 2.0, push: 2.5, force: 3.5 };
-      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [] };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [], smartmoney: [] };
 
       function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
       function client() { return new AlvaToolkit.AlvaClient(cfg()); }
@@ -254,6 +259,15 @@
             '<div class="macro-note">' + esc(m.note) + "</div>" +
             '<div class="macro-sub">Now ' + m.prob_now_pct + "% · move " + (m.change_pct >= 0 ? "+" : "") + m.change_pct + "pts (" + Number(m.z).toFixed(1) + "σ) · exposure " + m.exposure_pct + "% (" + esc(m.holdings || "—") + ")</div></div>";
         }).join("");
+      }
+      function renderSmartMoney() {
+        var el = document.getElementById("smartmoney");
+        if (!STATE.smartmoney || !STATE.smartmoney.length) { el.innerHTML = ""; return; }
+        var sell = STATE.smartmoney.some(function (m) { return m.state === "cluster-sell"; });
+        el.innerHTML = '<div class="card sm-card' + (sell ? " sm-sell" : "") + '"><div class="sm-h">Smart-money positioning · insider open-market activity · trailing, context not an alert</div>' +
+          STATE.smartmoney.map(function (m) {
+            return '<div class="sm-row"><b>' + esc(m.symbol) + "</b> — " + esc(m.note) + "</div>";
+          }).join("") + '<div class="macro-sub">Discretionary Form-4 buys/sells (10b5-1 excluded). Insider disclosure lags ~2 days.</div></div>';
       }
       function renderLens() {
         var o = STATE.overview; var top = STATE.holdings.slice().sort(function (a, b) { return b.weight - a.weight; })[0];
@@ -347,8 +361,9 @@
           flat(await readJson(FEED + "signals/items/@last/12")).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
           flat(await readJson(FEED + "universe/rows/@last/40")).forEach(function (u) { STATE.universe[u.symbol] = u; });
           try { STATE.macro = flat(await readJson(FEED + "macro/rows/@last/4")); } catch (e) { STATE.macro = []; }
+          try { STATE.smartmoney = flat(await readJson(FEED + "smartmoney/rows/@last/8")); } catch (e) { STATE.smartmoney = []; }
           renderOverview(STATE.overview); syncLabels(); wireControls();
-          renderSignals(); renderMacro(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
+          renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
           if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
           setTimeout(deepLinkScroll, 150);
         } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }

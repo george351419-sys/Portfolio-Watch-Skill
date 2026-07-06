@@ -162,7 +162,10 @@ to every holding when data exists; templates add asset-specific intelligence.
   auditor change/late filing, restatements, financing/dilution (S-1/S-3/424B/ATM,
   convertibles, secondaries), Form 4 insider transactions, 13D activist stakes.
   *Upgrade* open-market insider buys, clustered exec buying, financing for
-  cash-burning names, activist 13D. *Downgrade* routine 10b5-1 sales and
+  cash-burning names, activist 13D. **Built (v1):** a *Smart-money positioning*
+  overlay counts discretionary open-market Form-4 buys/sells (10b5-1 excluded);
+  a cluster of insiders (or the CEO) buying is a confirmer + a bullish-divergence
+  heads-up when price is weak — shown as portfolio context, never a per-stock push. *Downgrade* routine 10b5-1 sales and
   mechanical split/dividend adjustments.
 - Lockup / PIPE unlocks (SPACs), redemption risk.
 - Macro calendar (FOMC, CPI, rates, dollar, oil) **only when the portfolio is
