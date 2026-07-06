@@ -49,7 +49,8 @@ Follow the `alva` skill's session start and gates. The skill-specific order is:
 2. **Profile feed** — per-holding baseline + benchmark routing (the reusability
    engine). Build it first; all thresholds read from it.
 3. **Watch feed(s)** — the monitoring layers, emitting scored signals.
-4. **Playbook interface** — live-read HTML over the feeds (five views).
+4. **Playbook interface** — live-read HTML, **four tabs** (Watch / Incident / Theory /
+   Formulas — see §The Interface); Theory + Formulas are required, not optional.
 5. **Alert sidecar** — `notify/message` push, quiet by default, deep-linked.
 6. **Release + verify** — release, screenshot, enable alert, confirm a real run.
 
