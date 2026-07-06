@@ -81,6 +81,10 @@
       .wl-th input { width: 46px; font-size: 11px; padding: 2px 4px; border: 0.5px solid var(--line-l3); border-radius: 6px; text-align: center; font-family: inherit; }
       .wl-th span { font-size: 10px; color: var(--text-n5); }
       .wl-x { color: var(--text-n5); cursor: pointer; font-size: 14px; padding: 0 4px; }
+      .mode-badge { font-size: 11px; margin-left: 6px; }
+      .mode-seg { padding: 2px 8px; border-radius: 999px; border: 0.5px solid var(--line-l3); color: var(--text-n7); cursor: pointer; font-size: 11px; }
+      .mode-seg.mode-on { background: var(--text-n9); color: var(--grey-g0, #fff); border-color: var(--text-n9); cursor: default; }
+      .mode-seg.mode-live.mode-on { background: var(--main-m4); border-color: var(--main-m4); }
       .method p { font-size: 13px; color: var(--text-n9); line-height: 1.6; margin: 0 0 12px; }
       .method .lbl { font-weight: 500; }
       .method code, .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--grey-g2, #f1f0ef); padding: 1px 5px; border-radius: 4px; }
@@ -109,7 +113,7 @@
 
       <!-- ===================== WATCH ===================== -->
       <div class="pw-panel pwsel" id="tab-watch">
-        <div class="sec-title">Portfolio · <span id="asof">…</span></div>
+        <div class="sec-title">Portfolio · <span id="asof">…</span> <span id="modeBadge"></span></div>
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
         <div id="digest"></div>
@@ -258,6 +262,31 @@
         ];
         document.getElementById("kpis").innerHTML = kpis.map(function (k) { return '<div class="card"><div class="kpi-label">' + k.label + '</div><div class="kpi-value">' + k.value + "</div>" + (k.sub || "") + "</div>"; }).join("");
         document.getElementById("marketNote").innerHTML = o.market_note ? '<div class="note">' + esc(o.market_note) + "</div>" : "";
+        renderMode();
+      }
+      function renderMode() {
+        var el = document.getElementById("modeBadge"); if (!el) return;
+        var o = STATE.overview || {};
+        var m = o.mode || ((o.as_of && o.as_of < "2025-01-01") ? "demo" : "live");
+        var can = udfReady();
+        function seg(id, on, live) {
+          var c = "mode-seg" + (live ? " mode-live" : "") + (on ? " mode-on" : "");
+          var attr = (!on && can) ? ' data-mode="' + id + '"' : "";
+          var tip = on ? "" : (can ? ' title="switch data mode"' : ' title="sign in to switch"');
+          return '<span class="' + c + '"' + attr + tip + ">" + (live ? "🔴 Live" : "📌 Demo") + "</span>";
+        }
+        el.innerHTML = seg("demo", m === "demo", false) + " " + seg("live", m === "live", true);
+        el.querySelectorAll("[data-mode]").forEach(function (n) { n.addEventListener("click", function () { setMode(n.getAttribute("data-mode")); }); });
+      }
+      async function setMode(mode) {
+        if (!udfReady()) { setNote("Sign in to Alva to switch data mode.", true); return; }
+        setNote("Switching to " + mode.toUpperCase() + " …");
+        try {
+          await window.alva.udf.call("updateWatchlist", { action: "mode", mode: mode });
+          setNote(mode === "live"
+            ? "Switched to <b>Live</b> — the feed recomputes on today's data at its next run; the pinned Nov-2024 thesis demo is paused."
+            : "Switched to <b>Demo</b> — pinned to the 2024-11-21 session (MSTR + ITB thesis breaks). Applies on the next run.");
+        } catch (e) { setNote("Could not switch: " + esc(e && e.message ? e.message : String(e)), true); }
       }
 
       function evidenceCards() {
@@ -423,7 +452,10 @@
         var syms;
         if (!q) { syms = SAMPLES.filter(function (s) { return pool.indexOf(s) >= 0; }); pool.forEach(function (s) { if (syms.indexOf(s) < 0 && syms.length < 8) syms.push(s); }); }
         else { syms = pool.filter(function (s) { return s.indexOf(q) === 0; }).sort().slice(0, 12); }
+        // Chips for names the feed already pre-computed (instant preview of the move).
         var html = syms.map(function (s) { var u = STATE.universe[s] || {}; return '<span class="res-chip" data-add="' + s + '">+ ' + s + ' <span class="' + cls(u.ret_pct) + '" style="font-size:11px">' + pct(u.ret_pct) + "</span></span>"; }).join("");
+        // Any ticker can be added — if the typed symbol isn't in the pre-computed pool,
+        // offer an explicit add that runs the UDF and profiles it live on the spot.
         var validTicker = /^[A-Z][A-Z0-9.\-]{0,5}$/.test(q);
         var exact = syms.indexOf(q) >= 0 || STATE.monitored.indexOf(q) >= 0;
         if (validTicker && !exact) {

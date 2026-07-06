@@ -1,5 +1,7 @@
 { "type": "object", "properties": {
-    "action": { "type": "string", "enum": ["add", "remove"] },
+    "action": { "type": "string", "enum": ["add", "remove", "mode"] },
     "symbol": { "type": "string" },
-    "name": { "type": "string" } },
-  "required": ["action", "symbol"] }
+    "name": { "type": "string" },
+    "mode": { "type": "string", "enum": ["live", "demo"] },
+    "asof": { "type": "number" } },
+  "required": ["action"] }

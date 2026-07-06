@@ -7,6 +7,8 @@ const http = require("net/http");
 const secret = require("secret-manager");
 
 const CONFIG = "/alva/home/" + env.username + "/feeds/pw-config/v1/holdings.json";
+const MODE_CFG = "/alva/home/" + env.username + "/feeds/pw-config/v1/mode.json";
+const DEMO_ASOF = 1732237200; // 2024-11-21 session (MSTR + ITB thesis breaks)
 const BASE = "https://data-tools.prd.space.id";
 const KNOWN = {
   COIN: { name: "Coinbase", sector: "Crypto-linked" }, PLTR: { name: "Palantir", sector: "Software" },
@@ -47,9 +49,19 @@ async function evidenceFor(sym, asof) {
 (async () => {
   const a = env.args || {};
   const action = a.action;
+
+  // ---- Demo/Live toggle: flip the run mode the feed reads on its next run ----
+  if (action === "mode") {
+    const mode = String(a.mode || "").toLowerCase();
+    if (mode !== "live" && mode !== "demo") throw new Error("need mode=live|demo");
+    const demo_asof = mode === "demo" ? DEMO_ASOF : null;
+    await alfs.writeFile(MODE_CFG, JSON.stringify({ demo_asof }, null, 2));
+    return { ok: true, action: "mode", mode, demo_asof, note: "Saved. Applies on the next pw-watch run." };
+  }
+
   const symbol = String(a.symbol || "").toUpperCase().trim();
   const asof = Number(a.asof) || Math.floor(Date.now() / 1000);
-  if (!symbol || (action !== "add" && action !== "remove")) throw new Error("need action=add|remove and symbol");
+  if (!symbol || (action !== "add" && action !== "remove")) throw new Error("need action=add|remove|mode");
 
   let cfg = { holdings: [] };
   try { cfg = JSON.parse(String(await alfs.readFile(CONFIG))); } catch (e) {}

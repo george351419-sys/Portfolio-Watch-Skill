@@ -97,10 +97,20 @@ user-triggered, not a silent background pull. Wired into `SKILL.md` §Step 1;
 falls back to manual/chat/UI intake when no account is linked. *(Not live-demoed:
 the demo account has no linked account — `alva portfolio accounts` → `[]`.)*
 
+## Demo / Live toggle
+
+The header carries a **📌 Demo · 🔴 Live** switch (signed-in owner). Demo pins the run
+to the 2024-11-21 session so the price/catalyst thesis breaks are visible; Live
+recomputes on today's data. It's config-driven (`mode.json`, read by the feed via the
+`updateWatchlist` UDF `action:"mode"`), not hardcoded — verified round-trip: Live →
+`as_of 2026-07-06`, 2×P0; Demo → `as_of 2024-11-22`, 1×P0 (MSTR). All rows write to one
+fixed snapshot bucket so `@last` always returns exactly the current run.
+
 ## Honest gaps
-- **Demo pin:** the Playbook is pinned to the 2024-11-21 session so the price/catalyst
-  thesis breaks show; positioning signals (insider/options/crypto/sentiment/mNAV) use
-  current data. To run fully live, redeploy `pw-watch` without the `asof` arg.
+- **Demo default:** the Playbook opens in Demo (2024-11-21) so a reviewer sees the
+  thesis-break narrative immediately; flip the header to Live for current data. The
+  runtime can't self-trigger the backend, so after flipping, the feed applies it on its
+  next scheduled run (or an owner `alva deploy trigger --id 16985`).
 - Threshold parameters are evidence-based starting points, calibrated on historical
   replay and adjustable via three sensitivity presets.
 

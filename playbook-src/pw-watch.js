@@ -16,7 +16,27 @@ const BASE = "https://data-tools.prd.space.id";
 const JWT = secret.loadPlaintext("ARRAYS_JWT");
 const H = { headers: { Authorization: "Bearer " + JWT } };
 const USER = env.username;
-const asof = (env.args && Number(env.args.asof)) || Math.floor(Date.now() / 1000);
+// asof is config-driven so the interface's Demo/Live toggle can flip it without a
+// code change: mode.json {demo_asof:<sec>} pins the demo; absent/null ⇒ live now.
+// An explicit cron arg still overrides (for one-off backfills). Reassigned in main.
+let asof = (env.args && Number(env.args.asof)) || Math.floor(Date.now() / 1000);
+let RUN_MODE = "live";
+// This is a live "current state" dashboard, not a history series. All rows write to
+// ONE fixed date-bucket, and same-bucket appends REPLACE — so every run overwrites the
+// single snapshot and @last always returns exactly the current run. Crucially this makes
+// the demo↔live toggle clean: without it, demo (as_of 2024) and live (as_of today) would
+// land in different buckets and the newer one would shadow the other in @last. The real
+// analysis date is carried by the `as_of` field (below), not by this key.
+const SNAP_BUCKET = 1700000000000;
+async function loadMode() {
+  if (env.args && Number(env.args.asof)) { RUN_MODE = "demo"; return; } // explicit backfill
+  try {
+    const raw = await alfs.readFile("/alva/home/" + env.username + "/feeds/pw-config/v1/mode.json");
+    const m = JSON.parse(String(raw));
+    if (m && Number(m.demo_asof)) { asof = Number(m.demo_asof); RUN_MODE = "demo"; return; }
+  } catch (e) {}
+  asof = Math.floor(Date.now() / 1000); RUN_MODE = "live";
+}
 const Q_FDR = 0.1; // Benjamini-Hochberg target false-discovery rate
 const Z_ON = 2.5, Z_OFF = 1.5; // hysteresis thresholds (on z_idio)
 // Thesis-linked monitoring: holding -> stated buy-thesis, read from the user-owned
@@ -95,6 +115,7 @@ const Phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
 const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
 
 (async () => {
+  await loadMode(); // sets asof + RUN_MODE from mode.json before any data fetch
   THESIS = await loadThesis();
   const MACRO = await loadMacro();
   const profRaw = await alfs.readFile("/alva/home/" + USER + "/feeds/pw-profile/v1/data/profile/holdings/@last/10");
@@ -126,7 +147,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       const today = b[b.length - 1], prev = b[b.length - 2];
       const ret = (today.price_close - prev.price_close) / prev.price_close;
       const avgVol = last(b.map((x) => x.volume_traded), 20).reduce((x, y) => x + y, 0) / 20;
-      universeRows.push({ date: asof * 1000, symbol: sym, price: round(today.price_close), ret_pct: round(ret * 100, 2),
+      universeRows.push({ date: SNAP_BUCKET, symbol: sym, price: round(today.price_close), ret_pct: round(ret * 100, 2),
         z: round(ret / sigma, 2), residual_z: round((ret - beta * spyRet) / sEps, 2), rvol: avgVol ? round(today.volume_traded / avgVol, 2) : null, beta: round(beta, 2) });
     } catch (e) { /* skip uncovered symbol */ }
   }
@@ -192,7 +213,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       const dir = change < 0 ? "fell" : "rose";
       const impl = mk.factor === "rates" ? (change < 0 ? "less easing priced — a headwind for rate-sensitive holdings" : "more easing priced — a tailwind for rate-sensitive holdings") : "";
       macroRows.push({
-        date: asof * 1000, factor: mk.factor, label: mk.label,
+        date: SNAP_BUCKET, factor: mk.factor, label: mk.label,
         prob_now_pct: round(pNow * 100, 0), change_pct: round(change * 100, 0), z: round(zChg, 1),
         exposure_pct: round(exposure * 100, 0), holdings: hit.map((p) => p.symbol).join(", "),
         note: mk.label + " " + dir + " " + round(pRef * 100, 0) + "% → " + round(pNow * 100, 0) + "% this week (" +
@@ -214,7 +235,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
         const exposure = semis.reduce((a, p) => a + (p.weight || 0), 0);
         const up = val > ma30 && ma30 > ma60, down = val < ma30 && ma30 < ma60;
         if (up || down) {
-          macroRows.push({ date: asof * 1000, factor: "semiconductor", label: "Memory cycle (DXI)",
+          macroRows.push({ date: SNAP_BUCKET, factor: "semiconductor", label: "Memory cycle (DXI)",
             prob_now_pct: null, change_pct: round(chg, 1), z: null, exposure_pct: round(exposure * 100, 0), holdings: semis.map((p) => p.symbol).join(", "),
             note: "Memory prices (TrendForce DXI, as of " + d0.date + ") are " + (up ? "rising — above their 30/60-day averages: a semiconductor-cycle tailwind" : "rolling over — below their 30/60-day averages: a semiconductor-cycle headwind") +
               " for " + semis.map((p) => p.symbol).join(", ") + " (" + round(exposure * 100, 0) + "% of book). [DXI is most direct for memory names; a broad cycle read for GPU/AI via HBM.]" });
@@ -246,7 +267,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       } else if (sellers.size >= 3 && sellM > 3 * buyM) {
         state = "cluster-sell"; note = sellers.size + " insiders sold ~$" + sellM.toFixed(1) + "M (ex-10b5-1) — broad distribution.";
       }
-      if (state !== "quiet") smRows.push({ date: asof * 1000, symbol: p.symbol, state, buyers: buyers.size, sellers: sellers.size,
+      if (state !== "quiet") smRows.push({ date: SNAP_BUCKET, symbol: p.symbol, state, buyers: buyers.size, sellers: sellers.size,
         buy_m: round(buyM, 1), sell_m: round(sellM, 1), note });
     } catch (e) { /* skip symbol */ }
   }
@@ -276,7 +297,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       let ost = "normal", onote = "";
       if (premium != null && premium >= 1.3) { ost = "elevated"; onote = "IV " + round(iv * 100, 0) + "% is " + round(premium, 1) + "× realized — options bracing for a bigger move (often pre-catalyst)."; }
       else if (skew != null && skew >= 5) { ost = "downside-skew"; onote = "Put IV exceeds call IV by " + round(skew, 0) + "pts — options pricing downside fear."; }
-      optRows.push({ date: asof * 1000, symbol: p.symbol, atm_iv_pct: round(iv * 100, 0), expected_move_pct: round(expMove, 1),
+      optRows.push({ date: SNAP_BUCKET, symbol: p.symbol, atm_iv_pct: round(iv * 100, 0), expected_move_pct: round(expMove, 1),
         iv_premium: premium ? round(premium, 2) : null, skew_pts: skew != null ? round(skew, 0) : null, days: call.days, state: ost, note: onote });
     } catch (e) { /* skip symbol */ }
   }
@@ -303,7 +324,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       if (z >= 2 || annual >= 40) { cstate = "crowded-longs"; cnote = ref + " funding elevated (" + round(annual, 0) + "%/yr, " + round(z, 1) + "σ) — crowded longs, squeeze/mean-revert risk."; }
       else if (z <= -2 || annual <= -20) { cstate = "capitulation"; cnote = ref + " funding deeply negative — shorts crowded / capitulation."; }
       else if (oiChg != null && oiChg <= -12) { cstate = "deleveraging"; cnote = ref + " open interest fell " + round(oiChg, 0) + "% in a week — leverage flushing (liquidations)."; }
-      cryptoRows.push({ date: asof * 1000, ref, holdings: cryptoRefs[ref].join(", "), funding_annual_pct: round(annual, 0),
+      cryptoRows.push({ date: SNAP_BUCKET, ref, holdings: cryptoRefs[ref].join(", "), funding_annual_pct: round(annual, 0),
         funding_z: round(z, 1), oi_change_pct: oiChg != null ? round(oiChg, 0) : null, state: cstate, note: cnote });
     } catch (e) { /* skip */ }
   }
@@ -333,7 +354,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
         if (m >= 1.2) { state = "premium"; note = p.symbol + " market cap $" + round(mcap / 1e9, 1) + "B is +" + round(prem, 0) + "% over the crypto it holds ($" + round(nav / 1e9, 1) + "B) — a leverage/optimism premium."; }
         else if (m <= 0.9) { state = "discount"; note = p.symbol + " trades " + round(-prem, 0) + "% BELOW its crypto NAV ($" + round(nav / 1e9, 1) + "B vs $" + round(mcap / 1e9, 1) + "B mcap) — a valuation dislocation."; }
         else note = p.symbol + " near NAV (mNAV " + round(m, 2) + ").";
-        mnavRows.push({ date: asof * 1000, symbol: p.symbol, mnav: round(m, 2), premium_pct: round(prem, 0), mcap_b: round(mcap / 1e9, 1), nav_b: round(nav / 1e9, 1), holdings: parts.join(", "), state, note });
+        mnavRows.push({ date: SNAP_BUCKET, symbol: p.symbol, mnav: round(m, 2), premium_pct: round(prem, 0), mcap_b: round(mcap / 1e9, 1), nav_b: round(nav / 1e9, 1), holdings: parts.join(", "), state, note });
       }
     } catch (e) { /* skip */ }
   }
@@ -354,7 +375,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       if (lean >= 0.5 && bull >= 3) { state = "KOL-bullish"; note = bull + " tracked KOLs bullish / " + bear + " bearish (30d), " + (r.bull_signal_count_30d || 0) + " bull calls."; }
       else if (lean <= -0.5 && bear >= 3) { state = "KOL-bearish"; note = bear + " tracked KOLs bearish / " + bull + " bullish (30d)."; }
       else { note = bull + " bull / " + bear + " bear KOLs (30d)."; }
-      sentiRows.push({ date: asof * 1000, symbol: p.symbol, bull_30d: bull, bear_30d: bear, lean: round(lean, 2), state, note });
+      sentiRows.push({ date: SNAP_BUCKET, symbol: p.symbol, bull_30d: bull, bear_30d: bear, lean: round(lean, 2), state, note });
     }
   } catch (e) { /* fintwit unavailable → skip */ }
 
@@ -491,7 +512,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     else if (e.near52wLow) { headline = p.symbol + " at 52-week low"; why = "Milestone."; }
 
     holdings.push({
-      date: asof * 1000, symbol: p.symbol, name: p.name, weight: round(p.weight, 3),
+      date: SNAP_BUCKET, symbol: p.symbol, name: p.name, weight: round(p.weight, 3),
       price: round(e.today.price_close), ret_pct: round(e.ret * 100, 2), z: round(e.zTot, 2),
       residual_z: round(e.zIdio, 2), rvol: round(e.rvol, 2), dd_from_high_pct: round(e.ddFromHigh * 100, 2),
       beta: round(p.beta, 2), sigma_eps_pct: round(p.sigma_eps * 100, 2), tier: surfaced ? tier : "—",
@@ -523,7 +544,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   signals.sort((a, b) => b.score - a.score);
 
   const overview = {
-    date: asof * 1000, as_of: new Date(asof * 1000).toISOString().slice(0, 10),
+    date: SNAP_BUCKET, as_of: new Date(asof * 1000).toISOString().slice(0, 10), mode: RUN_MODE,
     port_return_pct: round(portRet * 100, 2), port_expected_pct: portExpected == null ? null : round(portExpected * 100, 2),
     market_return_pct: marketAvailable ? round(spyRet * 100, 2) : null, port_drawdown_pct: round(portDD * 100, 2),
     beta_weighted: round(betaW, 2), p0_count: p0.length, p1_count: p1.length, p2_count: p2.length,
@@ -555,7 +576,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     description: "Rigorous: residual-vol z, FDR, hysteresis, bounded scoring, quiet-by-default alerts.",
   });
   feed.def("portfolio", { overview: makeDoc("Portfolio Overview", "Header metrics", [
-    str("as_of"), num("port_return_pct"), num("port_expected_pct"), num("market_return_pct"), num("port_drawdown_pct"),
+    str("as_of"), str("mode"), num("port_return_pct"), num("port_expected_pct"), num("market_return_pct"), num("port_drawdown_pct"),
     num("beta_weighted"), num("p0_count"), num("p1_count"), num("p2_count"), num("attention"), str("sensitivity"),
     num("holdings_count"), num("fdr_q"), num("fdr_selected"), str("market_note")]) });
   feed.def("holdings", { rows: makeDoc("Holdings Grid", "Per-holding state", [
@@ -625,7 +646,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.
     await ctx.self.ts("notify", "message").append([{ date: Date.now(), title: "Portfolio Watch", body }]);
-    await ctx.self.ts("digest", "message").append([{ date: asof * 1000, as_of: overview.as_of, text: digestText }]);
+    await ctx.self.ts("digest", "message").append([{ date: SNAP_BUCKET, as_of: overview.as_of, text: digestText }]);
   });
 
   return { as_of: overview.as_of, port_return_pct: overview.port_return_pct, fdr_selected: fdrPass.size,
