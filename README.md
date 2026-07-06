@@ -1,9 +1,13 @@
 # Portfolio Watch Skill
 
+[![Latest release](https://img.shields.io/github/v/release/george351419-sys/Portfolio-Watch-Skill?label=download&sort=semver)](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest)
+
 A **Portfolio Watch Skill** for Alva: load it, hand it any portfolio, and get a
 Playbook with a live interface and quiet, ranked alerts — it decides which
 dimensions to watch, what's a real move vs noise, and how to rank signals, so it
 works on a portfolio it has never seen.
+
+> ⬇️ **Download & install:** grab [**`portfolio-watch-skill-v2.0.0.zip`** from the latest release](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest), unzip, and paste `SKILL.md` into Alva's Agent (it declares `builds_on: alva`). Then say *"watch my portfolio"*. Full steps in the release notes.
 
 > 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
 >
