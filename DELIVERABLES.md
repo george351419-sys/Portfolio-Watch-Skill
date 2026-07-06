@@ -7,7 +7,7 @@ Live snapshot of what's shipped. **Playbook:** https://alva.ai/u/george351419/pl
 
 | # | Deliverable | Where | Status |
 |---|---|---|---|
-| 1 | **The Skill** (single, pasteable file) | [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) | ✅ |
+| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) folder · packaged [`portfolio-watch-skill-v2.0.0.zip`](portfolio-watch-skill-v2.0.0.zip) | ✅ |
 | 2 | **A Playbook built from it** (interface + alerts live) | [live link](https://alva.ai/u/george351419/playbooks/portfolio-watch) | ✅ |
 | 3 | **One-pager** on the thinking (bilingual + figures) | [`One-Pager.md`](One-Pager.md) | ✅ |
 

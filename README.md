@@ -88,7 +88,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 | # | Deliverable | Where |
 |---|---|---|
-| 1 | **The Skill** (SKILL.md, single file) | [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) |
+| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) · packaged [`portfolio-watch-skill-v2.0.0.zip`](portfolio-watch-skill-v2.0.0.zip) |
 | 2 | **A Playbook built from it** (interface + alerts live) | https://alva.ai/u/george351419/playbooks/portfolio-watch |
 | 3 | **One-pager** on the thinking (bilingual + figures) | [`One-Pager.md`](One-Pager.md) |
 
@@ -104,7 +104,9 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 ```
 AGENTS.md                     Guide for AI agents & maintainers (architecture, gotchas, how to extend)
-portfolio-watch/SKILL.md      Deliverable 1 — the Skill (single, pasteable file)
+portfolio-watch-skill-v2.0.0.zip   Deliverable 1 — the packaged, self-contained Skill bundle
+portfolio-watch/              Deliverable 1 (unzipped) — SKILL.md + README + scripts/{live,modules}
+portfolio-watch/SKILL.md      the Skill (single, pasteable file)
 One-Pager.md                  Deliverable 3 — one-pager (bilingual, embeds assets/fig1-3)
 Strategy-Analysis.md          Math appendix — rigorous derivations (§7 = alert fusion)
 alert-fusion.js               Reference implementation of Narrative Fusing + Silent Update
