@@ -105,20 +105,20 @@ user-triggered, not a silent background pull. Wired into `SKILL.md` §Step 1;
 falls back to manual/chat/UI intake when no account is linked. *(Not live-demoed:
 the demo account has no linked account — `alva portfolio accounts` → `[]`.)*
 
-## Demo / Live toggle
+## Demo / Live toggle (instant)
 
-The header carries a **📌 Demo · 🔴 Live** switch (signed-in owner). Demo pins the run
-to the 2024-11-21 session so the price/catalyst thesis breaks are visible; Live
-recomputes on today's data. It's config-driven (`mode.json`, read by the feed via the
-`updateWatchlist` UDF `action:"mode"`), not hardcoded — verified round-trip: Live →
-`as_of 2026-07-06`, 2×P0; Demo → `as_of 2024-11-22`, 1×P0 (MSTR). All rows write to one
-fixed snapshot bucket so `@last` always returns exactly the current run.
+The header carries a **📌 Demo · 🔴 Live** switch that flips **instantly, client-side**,
+for any viewer. The feed writes each mode to its own snapshot bucket (demo + live coexist
+permanently), and the interface just re-reads the other bucket — no backend trigger, no
+sign-in needed. Demo is the pinned 2024-11-21 session (MSTR + ITB thesis breaks); Live is
+computed on current-market data (`as_of 2026-07-06`, 2×P0 verified). The Live bucket
+refreshes on the scheduled feed run.
 
 ## Honest gaps
 - **Demo default:** the Playbook opens in Demo (2024-11-21) so a reviewer sees the
-  thesis-break narrative immediately; flip the header to Live for current data. The
-  runtime can't self-trigger the backend, so after flipping, the feed applies it on its
-  next scheduled run (or an owner `alva deploy trigger --id 16985`).
+  thesis-break narrative immediately; flip the header to Live for current data (instant).
+  The Live snapshot is as fresh as the last feed run (scheduled weekdays; runtime can't
+  self-trigger a recompute on demand).
 - Threshold parameters are evidence-based starting points, calibrated on historical
   replay and adjustable via three sensitivity presets.
 

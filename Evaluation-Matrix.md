@@ -56,7 +56,7 @@ oversold. Each row says **how far it's been taken** and **what backs it**.
 | **Alert fusion** — Narrative Fusing + Silent Update | 🔵 · 📝 | `alert-fusion.js` self-test (3-event→1 card, buzz 3→2); **editable-card delivery needs a BYOD bot token — not wired** |
 | Interface: Watch/Theory/Formulas, War-Room, sliders | 🟢 | live, passes `alva lint` |
 | Search-add **any** ticker (UDF profiles it live) | 🟢 | `updateWatchlist` add path |
-| **Demo/Live toggle** | 🟢 · ⚠️ | live; applies on next feed run — runtime can't self-trigger the backend |
+| **Demo/Live toggle** (instant, client-side) | 🟢 | dual-snapshot: each mode has its own bucket; the header switches buckets **instantly** for any viewer. The Live bucket refreshes on the scheduled feed run. |
 | Watched set as user-owned config (chat + UI) | 🟢 | `holdings.json` + `updateWatchlist` |
 | **Portfolio auto-intake** from a linked account | 📝 · ⚠️ | designed (SKILL §Step 1, `alva portfolio summary`); **not live-demoed — demo account has no linked account** (`accounts → []`). Credible, unproven. |
 

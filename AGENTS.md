@@ -86,12 +86,14 @@ These are non-obvious and already cost debugging time. Respect them.
   `alfs.remove` takes **one path arg** (no options object).
 - **Same `date`-bucket ⇒ REPLACE.** A new run's append at the same `date` value
   overwrites the prior contents of that bucket. Different `date` values coexist and
-  `@last/N` returns the largest-`date` records. **We exploit this:** all rows write
-  to **one fixed bucket** `SNAP_BUCKET = 1700000000000`, so every run overwrites the
-  single snapshot and `@last` always returns exactly the current run. The real
-  analysis date is carried by the **`as_of`** string field, not by `date`. This is
-  what makes the Demo/Live toggle clean (otherwise demo `as_of 2024` and live
-  `as_of 2026` land in different buckets and shadow each other).
+  `@last/N` returns the largest-`date` records. **We exploit this two ways:** (1) all
+  rows write to a **fixed bucket** (not the wall clock) so each run replaces its
+  snapshot instead of accumulating; (2) the Demo and Live modes use **two different
+  fixed buckets** (`BUCKET_DEMO = 1700000000000`, `BUCKET_LIVE = 1700000001000`), so
+  both snapshots **coexist permanently** and the interface loads both and switches
+  client-side instantly. The real analysis date is the **`as_of`** string field, not
+  `date`. NB: every row must use `SNAP_BUCKET` for its `date` — the signals row once
+  used the event's `time_close` and silently fell outside both buckets.
 - **The runtime cannot trigger a cron / recompute the backend.** No SDK for it. So
   UI actions that need a fresh feed run (the Demo/Live toggle) **write a config flag**
   and apply on the next scheduled run or an owner `alva deploy trigger --id 16985`.
@@ -197,9 +199,10 @@ notes/                     Working trail (not deliverables)
 
 ## 11. Known gaps / honest limits (candidates for future work)
 
-- **Demo default & no self-trigger:** opens in Demo; Live applies on next feed run
-  (runtime can't trigger the backend). A scheduled "dual snapshot" or a lightweight
-  owner-trigger path would make Live instant for viewers.
+- **Live freshness:** the Demo/Live toggle is instant (dual-snapshot, client-side),
+  but the Live bucket is only as fresh as the last feed run (scheduled weekdays; the
+  runtime can't self-trigger a recompute on demand). Demo is a frozen pinned session
+  by design.
 - **Portfolio auto-intake not live-demoed:** the demo account has no linked account
   (`alva portfolio accounts` → `[]`); wire + demo once an account is connected.
 - **Telegram "silent update"** (edit one card in place) needs a BYOD bot token; the

@@ -266,26 +266,23 @@
       }
       function renderMode() {
         var el = document.getElementById("modeBadge"); if (!el) return;
-        var o = STATE.overview || {};
-        var m = o.mode || ((o.as_of && o.as_of < "2025-01-01") ? "demo" : "live");
-        var can = udfReady();
-        function seg(id, on, live) {
+        function seg(id, live) {
+          var on = curVariant === id;
           var c = "mode-seg" + (live ? " mode-live" : "") + (on ? " mode-on" : "");
-          var attr = (!on && can) ? ' data-mode="' + id + '"' : "";
-          var tip = on ? "" : (can ? ' title="switch data mode"' : ' title="sign in to switch"');
-          return '<span class="' + c + '"' + attr + tip + ">" + (live ? "🔴 Live" : "📌 Demo") + "</span>";
+          var attr = on ? "" : ' data-mode="' + id + '" title="switch instantly"';
+          return '<span class="' + c + '"' + attr + ">" + (live ? "🔴 Live" : "📌 Demo") + "</span>";
         }
-        el.innerHTML = seg("demo", m === "demo", false) + " " + seg("live", m === "live", true);
+        el.innerHTML = seg("demo", false) + " " + seg("live", true);
         el.querySelectorAll("[data-mode]").forEach(function (n) { n.addEventListener("click", function () { setMode(n.getAttribute("data-mode")); }); });
       }
-      async function setMode(mode) {
-        if (!udfReady()) { setNote("Sign in to Alva to switch data mode.", true); return; }
-        setNote("Switching to " + mode.toUpperCase() + " …");
+      async function setMode(variant) {
+        if (variant === curVariant) return;
+        setNote("Loading " + variant.toUpperCase() + " snapshot …");
         try {
-          await window.alva.udf.call("updateWatchlist", { action: "mode", mode: mode });
-          setNote(mode === "live"
-            ? "Switched to <b>Live</b> — the feed recomputes on today's data at its next run; the pinned Nov-2024 thesis demo is paused."
-            : "Switched to <b>Demo</b> — pinned to the 2024-11-21 session (MSTR + ITB thesis breaks). Applies on the next run.");
+          await loadSnapshot(variant); // instant client-side switch — reads the other bucket, re-renders
+          setNote(curVariant === "live"
+            ? "<b>Live</b> — computed on the latest feed run's current-market data."
+            : "<b>Demo</b> — pinned to the 2024-11-21 session (MSTR + ITB thesis breaks).");
         } catch (e) { setNote("Could not switch: " + esc(e && e.message ? e.message : String(e)), true); }
       }
 
@@ -494,23 +491,37 @@
       }
       function deepLinkScroll() { if (!location.hash) return; var el = document.querySelector(location.hash); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("flash"); } }
 
+      // Each mode's rows live in their own fixed bucket; load BOTH and switch client-side.
+      var BUCKET = { demo: 1700000000000, live: 1700000001000 };
+      var curVariant = "demo";
+      function pickVar(rows, v) { var b = BUCKET[v]; return rows.filter(function (r) { return Number(r.date) === b; }); }
+      async function loadSnapshot(variant) {
+        // reset per-symbol maps so a switch never shows stale rows from the other mode
+        STATE.signalsBySym = {}; STATE.universe = {}; STATE.optionsBySym = {};
+        STATE.cryptoByHolding = {}; STATE.sentimentBySym = {}; STATE.mnavBySym = {}; STATE.macro = []; STATE.smartmoney = [];
+        var ovAll = flat(await readJson(FEED + "portfolio/overview/@last/2"));
+        var ov = pickVar(ovAll, variant)[0];
+        if (!ov) { variant = variant === "demo" ? "live" : "demo"; ov = pickVar(ovAll, variant)[0]; } // fall back if a mode isn't populated yet
+        curVariant = variant;
+        STATE.overview = ov || null;
+        STATE.holdings = pickVar(flat(await readJson(FEED + "holdings/rows/@last/24")), variant);
+        STATE.monitored = STATE.holdings.map(function (h) { return h.symbol; });
+        pickVar(flat(await readJson(FEED + "signals/items/@last/24")), variant).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
+        pickVar(flat(await readJson(FEED + "universe/rows/@last/80")), variant).forEach(function (u) { STATE.universe[u.symbol] = u; });
+        try { STATE.macro = pickVar(flat(await readJson(FEED + "macro/rows/@last/8")), variant); } catch (e) {}
+        try { STATE.smartmoney = pickVar(flat(await readJson(FEED + "smartmoney/rows/@last/16")), variant); } catch (e) {}
+        try { pickVar(flat(await readJson(FEED + "options/rows/@last/24")), variant).forEach(function (o) { STATE.optionsBySym[o.symbol] = o; }); } catch (e) {}
+        try { pickVar(flat(await readJson(FEED + "crypto/rows/@last/12")), variant).forEach(function (c) { String(c.holdings || "").split(", ").forEach(function (h) { STATE.cryptoByHolding[h] = c; }); }); } catch (e) {}
+        try { pickVar(flat(await readJson(FEED + "sentiment/rows/@last/20")), variant).forEach(function (x) { STATE.sentimentBySym[x.symbol] = x; }); } catch (e) {}
+        try { pickVar(flat(await readJson(FEED + "mnav/rows/@last/12")), variant).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
+        try { STATE.digest = pickVar(flat(await readJson(FEED + "digest/message/@last/2")), variant)[0]; } catch (e) { STATE.digest = null; }
+        if (STATE.overview) renderOverview(STATE.overview);
+        renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderMonChips(); renderSearch("");
+      }
       (async function () {
         try {
-          initTabs();
-          STATE.overview = flat(await readJson(FEED + "portfolio/overview/@last/1"))[0];
-          STATE.holdings = flat(await readJson(FEED + "holdings/rows/@last/12"));
-          STATE.monitored = STATE.holdings.map(function (h) { return h.symbol; });
-          flat(await readJson(FEED + "signals/items/@last/12")).forEach(function (s) { STATE.signalsBySym[s.symbol] = s; });
-          flat(await readJson(FEED + "universe/rows/@last/40")).forEach(function (u) { STATE.universe[u.symbol] = u; });
-          try { STATE.macro = flat(await readJson(FEED + "macro/rows/@last/4")); } catch (e) { STATE.macro = []; }
-          try { STATE.smartmoney = flat(await readJson(FEED + "smartmoney/rows/@last/8")); } catch (e) { STATE.smartmoney = []; }
-          try { flat(await readJson(FEED + "options/rows/@last/12")).forEach(function (o) { STATE.optionsBySym[o.symbol] = o; }); } catch (e) {}
-          try { flat(await readJson(FEED + "crypto/rows/@last/6")).forEach(function (c) { String(c.holdings || "").split(", ").forEach(function (h) { STATE.cryptoByHolding[h] = c; }); }); } catch (e) {}
-          try { flat(await readJson(FEED + "sentiment/rows/@last/10")).forEach(function (x) { STATE.sentimentBySym[x.symbol] = x; }); } catch (e) {}
-          try { flat(await readJson(FEED + "mnav/rows/@last/6")).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
-          try { STATE.digest = flat(await readJson(FEED + "digest/message/@last/1"))[0]; } catch (e) {}
-          renderOverview(STATE.overview); syncLabels(); wireControls();
-          renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
+          initTabs(); syncLabels(); wireControls(); renderFormulas();
+          await loadSnapshot("demo");
           if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
           setTimeout(deepLinkScroll, 150);
         } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }

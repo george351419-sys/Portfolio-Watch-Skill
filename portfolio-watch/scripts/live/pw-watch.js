@@ -22,12 +22,12 @@ const USER = env.username;
 let asof = (env.args && Number(env.args.asof)) || Math.floor(Date.now() / 1000);
 let RUN_MODE = "live";
 // This is a live "current state" dashboard, not a history series. All rows write to
-// ONE fixed date-bucket, and same-bucket appends REPLACE — so every run overwrites the
-// single snapshot and @last always returns exactly the current run. Crucially this makes
-// the demo↔live toggle clean: without it, demo (as_of 2024) and live (as_of today) would
-// land in different buckets and the newer one would shadow the other in @last. The real
-// analysis date is carried by the `as_of` field (below), not by this key.
-const SNAP_BUCKET = 1700000000000;
+// Fixed date-buckets, one PER MODE — same-bucket appends REPLACE, so each mode's run
+// overwrites just its own snapshot and the two coexist permanently. The interface loads
+// BOTH and switches client-side instantly (no backend trigger). The real analysis date is
+// carried by the `as_of` field (below), not by this key. Demo bucket < Live bucket.
+const BUCKET_DEMO = 1700000000000, BUCKET_LIVE = 1700000001000;
+let SNAP_BUCKET = BUCKET_DEMO; // reassigned from RUN_MODE after loadMode()
 async function loadMode() {
   if (env.args && Number(env.args.asof)) { RUN_MODE = "demo"; return; } // explicit backfill
   try {
@@ -116,6 +116,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
 
 (async () => {
   await loadMode(); // sets asof + RUN_MODE from mode.json before any data fetch
+  SNAP_BUCKET = RUN_MODE === "demo" ? BUCKET_DEMO : BUCKET_LIVE; // write this mode's own bucket
   THESIS = await loadThesis();
   const MACRO = await loadMacro();
   const profRaw = await alfs.readFile("/alva/home/" + USER + "/feeds/pw-profile/v1/data/profile/holdings/@last/10");
@@ -523,7 +524,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     });
     if (surfaced) {
       signals.push({
-        date: e.today.time_close * 1000, signal_id: sigId, symbol: p.symbol, name: p.name, tier, score, kind,
+        date: SNAP_BUCKET, signal_id: sigId, symbol: p.symbol, name: p.name, tier, score, kind,
         direction: dir, ret_pct: round(e.ret * 100, 2), z: round(e.zTot, 2), residual_z: round(e.zIdio, 2),
         rvol: round(e.rvol, 2), weight: round(p.weight, 3), confirmed, market_driven: e.marketDriven,
         fdr_pass: fdrPass.has(p.symbol), cold_start: !!p.cold_start,
