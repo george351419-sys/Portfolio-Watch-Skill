@@ -533,6 +533,21 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
       "%; some holdings tracked it (beta-driven, rolled up — not single-name news)." : "",
   };
 
+  // ---- daily digest: deterministic narrative assembled from computed facts ----
+  // A once-a-day proactive summary (unlike quiet-by-default alerts). No LLM → no
+  // fabrication; swap in @alva/alvaask for a richer narrative if desired.
+  const digestParts = [];
+  digestParts.push("Your book is " + (portRet >= 0 ? "+" : "") + round(portRet * 100, 1) + "% today (market " +
+    (marketAvailable ? (spyRet >= 0 ? "+" : "") + round(spyRet * 100, 1) + "%" : "n/a") + "), drawdown " + round(portDD * 100, 1) + "%.");
+  if (p0.length || p1.length) {
+    const top = signals.slice(0, 2).map((s) => s.symbol + " " + s.tier).join(", ");
+    digestParts.push("Attention: " + (p0.length + p1.length) + " signal" + (p0.length + p1.length > 1 ? "s" : "") + " (" + top + ") — " + (signals[0] ? signals[0].headline.replace(/^⚠️ /, "").replace(/\.$/, "") : "") + ".");
+  } else digestParts.push("No single-name signals cleared the bar — a quiet day.");
+  if (macroRows.length) digestParts.push("Context: " + macroRows[0].note);
+  if (smRows.length) digestParts.push("Smart money: " + smRows.map((r) => r.symbol + " " + r.state).join(", ") + ".");
+  if (mnavRows.length) digestParts.push("Valuation: " + mnavRows[0].note);
+  const digestText = digestParts.join(" ");
+
   // ---- hysteresis / ratchet + push body ----
   await (async () => {})(); // placeholder; kv accessed in feed.run
   const feed = new Feed({
@@ -566,6 +581,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
   feed.def("mnav", { rows: makeDoc("Crypto-treasury mNAV", "Market cap vs on-balance-sheet crypto NAV", [
     str("symbol"), num("mnav"), num("premium_pct"), num("mcap_b"), num("nav_b"), str("holdings"), str("state"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
+  feed.def("digest", { message: makeDoc("Daily Digest", "Proactive daily narrative", [str("as_of"), str("text")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
   await feed.run(async (ctx) => {
@@ -609,6 +625,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.
     await ctx.self.ts("notify", "message").append([{ date: Date.now(), title: "Portfolio Watch", body }]);
+    await ctx.self.ts("digest", "message").append([{ date: asof * 1000, as_of: overview.as_of, text: digestText }]);
   });
 
   return { as_of: overview.as_of, port_return_pct: overview.port_return_pct, fdr_selected: fdrPass.size,

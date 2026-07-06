@@ -103,6 +103,7 @@
         <div class="sec-title">Portfolio · <span id="asof">…</span></div>
         <div class="kpi-row" id="kpis"></div>
         <div id="marketNote"></div>
+        <div id="digest"></div>
         <div id="macro"></div>
         <div id="smartmoney"></div>
 
@@ -215,7 +216,7 @@
       var USER = "george351419";
       var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
       var TH = { surface: 2.0, push: 2.5, force: 3.5 };
-      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [], smartmoney: [], optionsBySym: {}, cryptoByHolding: {}, sentimentBySym: {}, mnavBySym: {} };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [], smartmoney: [], optionsBySym: {}, cryptoByHolding: {}, sentimentBySym: {}, mnavBySym: {}, digest: null };
 
       function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
       function client() { return new AlvaToolkit.AlvaClient(cfg()); }
@@ -315,6 +316,10 @@
           var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
           return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + mnavLine(h.symbol) + sentiLine(h.symbol) + optLine(h.symbol) + cryptoLine(h.symbol) + "</div>";
         }).join("");
+      }
+      function renderDigest() {
+        var el = document.getElementById("digest"); if (!STATE.digest || !STATE.digest.text) { el.innerHTML = ""; return; }
+        el.innerHTML = '<div class="card" style="border-left:3px solid var(--text-n7)"><div class="sm-h" style="color:var(--text-n7)">Today\'s digest · ' + esc(STATE.digest.as_of || "") + '</div><div class="macro-note">' + esc(STATE.digest.text) + "</div></div>";
       }
       function renderMacro() {
         var el = document.getElementById("macro");
@@ -433,8 +438,9 @@
           try { flat(await readJson(FEED + "crypto/rows/@last/6")).forEach(function (c) { String(c.holdings || "").split(", ").forEach(function (h) { STATE.cryptoByHolding[h] = c; }); }); } catch (e) {}
           try { flat(await readJson(FEED + "sentiment/rows/@last/10")).forEach(function (x) { STATE.sentimentBySym[x.symbol] = x; }); } catch (e) {}
           try { flat(await readJson(FEED + "mnav/rows/@last/6")).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
+          try { STATE.digest = flat(await readJson(FEED + "digest/message/@last/1"))[0]; } catch (e) {}
           renderOverview(STATE.overview); syncLabels(); wireControls();
-          renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
+          renderDigest(); renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
           if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
           setTimeout(deepLinkScroll, 150);
         } catch (e) { document.getElementById("signals").innerHTML = '<div class="empty">Could not load feed data: ' + esc(e.message) + "</div>"; }
