@@ -7,7 +7,7 @@ Playbook with a live interface and quiet, ranked alerts — it decides which
 dimensions to watch, what's a real move vs noise, and how to rank signals, so it
 works on a portfolio it has never seen.
 
-> ⬇️ **Download & install:** grab [**`portfolio-watch-skill-v2.1.0.zip`** from the latest release](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest), unzip, and paste `SKILL.md` into Alva's Agent (it declares `builds_on: alva`). Then say *"watch my portfolio"*. Full steps in the release notes.
+> ⬇️ **Download & install:** grab [**`portfolio-watch-skill-v2.1.1.zip`** from the latest release](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest), unzip, and paste `SKILL.md` into Alva's Agent (it declares `builds_on: alva`). Then say *"watch my portfolio"*. Full steps in the release notes.
 
 > 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
 >
@@ -58,8 +58,8 @@ that exists. See [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) §Thesis
 
 ## 🔎 Also usable, not just smart
 
-The Playbook is organized into three tabs — **Watch · Theory · Formulas** — so a
-user sees the alerts, *and* the reasoning, *and* the exact formulas. On the Watch
+The Playbook is organized into four tabs — **Watch · Incident · Theory · Formulas** — so a
+user sees the alerts, *how they fuse into one card*, the reasoning, *and* the exact formulas. On the Watch
 tab you can **search any ticker and add it to your watchlist, each with its own
 σ-thresholds**, and drag sliders to re-threshold the live evidence and watch
 signals appear or clear in real time. The methodology and every parameter are
@@ -106,6 +106,15 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 ## 🔁 Adopt or remix this
 
+> ℹ️ **A Skill is a *methodology blueprint*, not a fixed app.** When you point Alva at
+> this skill, its Agent **re-builds a playbook from the methodology** — it doesn't copy
+> our exact interface, so the result can look different (e.g. a Watch-only dashboard).
+> **For the exact 4-tab interface** (Watch · Incident · Theory · Formulas, sliders, UDF
+> edits), **[Remix the live Playbook](https://alva.ai/u/george351419/playbooks/portfolio-watch)**
+> or lift [`playbook-src/`](playbook-src/) directly — that copies the built artifact.
+> Using the skill text is the right path when you want the *monitoring judgment* applied
+> to a new portfolio; Remix is the right path when you want this *interface*.
+
 - **Use the Skill on your own portfolio:** paste [`portfolio-watch/SKILL.md`](portfolio-watch/SKILL.md) into the Alva chat (it's a single, self-contained file). If you've **linked a brokerage/crypto account** to Alva's Portfolio module, just say *"watch my portfolio"* — it reads your real positions (`alva portfolio summary`, TREX + SnapTrade) and monitors them at true weights, zero typing. No linked account? Say *"watch my NVDA, TSLA, AAPL."* Either way the watched set is a user-owned config you edit anytime (by chat or in the UI), and *"sync my portfolio"* diffs in new trades.
 - **Remix the Playbook:** `alva remix` the live Playbook, or lift the feed/UI sources from [`playbook-src/`](playbook-src/) (`pw-profile.js`, `pw-watch.js`, `pw-index.html`, `updateWatchlist.js`, `holdings.json`).
 - **Reuse a single capability:** the verified reference modules are standalone — `thesis-monitor.js`, `catalyst-thesis.js`, `alert-fusion.js`, `smart-money.js`, `options-signal.js`, `crypto-micro.js`.
@@ -116,7 +125,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 | # | Deliverable | Where |
 |---|---|---|
-| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) · packaged [`portfolio-watch-skill-v2.1.0.zip`](portfolio-watch-skill-v2.1.0.zip) |
+| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) · packaged [`portfolio-watch-skill-v2.1.1.zip`](portfolio-watch-skill-v2.1.1.zip) |
 | 2 | **A Playbook built from it** (interface + alerts live) | https://alva.ai/u/george351419/playbooks/portfolio-watch |
 | 3 | **One-pager** on the thinking (bilingual + figures) | [`One-Pager.md`](One-Pager.md) |
 
@@ -134,7 +143,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 ```
 AGENTS.md                     Guide for AI agents & maintainers (architecture, gotchas, how to extend)
-portfolio-watch-skill-v2.1.0.zip   Deliverable 1 — the packaged, self-contained Skill bundle
+portfolio-watch-skill-v2.1.1.zip   Deliverable 1 — the packaged, self-contained Skill bundle
 portfolio-watch/              Deliverable 1 (unzipped) — SKILL.md + README + scripts/{live,modules}
 portfolio-watch/SKILL.md      the Skill (single, pasteable file)
 One-Pager.md                  Deliverable 3 — one-pager (bilingual, embeds assets/fig1-3)

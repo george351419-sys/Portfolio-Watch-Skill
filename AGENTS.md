@@ -21,6 +21,16 @@ IM app, that works on a portfolio it has **never seen before**.
 
 Status & full inventory: **[`DELIVERABLES.md`](DELIVERABLES.md)** (start there for "what's shipped").
 
+> ⚠️ **Skill ≠ template.** `SKILL.md` is a *methodology blueprint*: when Alva's Agent
+> loads it, the Agent **re-implements a playbook from scratch** following the method — it
+> does **not** copy our `pw-index.html`, so a fresh build can differ (a real user got a
+> Watch-only dashboard with no Theory/Formulas). Two consequences: (1) the skill's
+> interface section now **explicitly mandates the four tabs** so rebuilds include the
+> explanatory ones; (2) for pixel-exact fidelity, **Remix the live Playbook** or lift
+> `playbook-src/` — that copies the built artifact, not the blueprint. The live Playbook
+> (`playbook-src/`, and the ALFS deploy) is the source of truth for *this interface*;
+> `SKILL.md` is the source of truth for *the method*.
+
 ## 2. The one idea everything follows from
 
 > **Every threshold is relative.** NVDA −3% is a normal day; a utility −3% is news.
