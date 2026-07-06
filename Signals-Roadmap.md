@@ -86,7 +86,7 @@ Same architecture principle (new source → existing mechanism, no new noise).
 
 ### Round 2 status
 - Phase A: ✅ DONE — fintwit-sentiment.js verified (NVDA 11 KOLs bullish/0 bearish, source Alva Fintwit Intelligence); live KOL sentiment chip on holdings
-- Phase B: pending
+- Phase B: ✅ DONE — mnav-lens.js verified (MSTR mNAV 0.65 = 35% discount to 847k-BTC NAV; materiality gate excludes COIN 41x); live mNAV chip on crypto-treasury holdings
 - Phase C: pending
 - Phase D: pending
 - Phase E: pending

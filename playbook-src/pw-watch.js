@@ -308,6 +308,36 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     } catch (e) { /* skip */ }
   }
 
+  // ---- crypto-treasury mNAV lens (market cap vs on-balance-sheet crypto NAV) ----
+  const mnavRows = [];
+  const treasuryHoldings = profiles.filter((p) => /crypto-linked|crypto linked/i.test(p.sector || ""));
+  if (treasuryHoldings.length) {
+    try {
+      const hold = await getJson(BASE + "/api/v1/crypto/holdings?symbol=BTC");
+      const idx = {}; hold.forEach((h) => { if (h.symbol) idx[h.symbol] = h; });
+      const mNow = Math.floor(Date.now() / 1000);
+      for (const p of treasuryHoldings) {
+        const rec = idx[p.symbol]; if (!rec || !rec.token_holdings) continue;
+        let nav = 0, parts = [];
+        for (const tk of Object.keys(rec.token_holdings)) {
+          const amt = rec.token_holdings[tk] && rec.token_holdings[tk].amount; if (!amt) continue;
+          const k = await getJson(BASE + "/api/v1/crypto/binance/spot/usdt/kline?symbol=" + tk + "&interval=1d&limit=2&start_time=" + (mNow - 6 * 86400) + "&end_time=" + mNow);
+          const px = k[0] && k[0].price_close; if (!px) continue;
+          nav += amt * px; parts.push(tk + " " + Math.round(amt / 1e3) + "k");
+        }
+        const mc = await getJson(BASE + "/api/v1/stocks/market-metrics?symbol=" + p.symbol + "&indicator=MARKET_CAP&interval=1d&start_time=" + (mNow - 20 * 86400) + "&end_time=" + mNow);
+        const mcap = mc[0] && mc[0].values && mc[0].values[0] ? mc[0].values[0].value : null;
+        if (!mcap || !nav || nav / mcap < 0.3) continue; // materiality gate
+        const m = mcap / nav, prem = (m - 1) * 100;
+        let state = "near-NAV", note = "";
+        if (m >= 1.2) { state = "premium"; note = p.symbol + " market cap $" + round(mcap / 1e9, 1) + "B is +" + round(prem, 0) + "% over the crypto it holds ($" + round(nav / 1e9, 1) + "B) — a leverage/optimism premium."; }
+        else if (m <= 0.9) { state = "discount"; note = p.symbol + " trades " + round(-prem, 0) + "% BELOW its crypto NAV ($" + round(nav / 1e9, 1) + "B vs $" + round(mcap / 1e9, 1) + "B mcap) — a valuation dislocation."; }
+        else note = p.symbol + " near NAV (mNAV " + round(m, 2) + ").";
+        mnavRows.push({ date: asof * 1000, symbol: p.symbol, mnav: round(m, 2), premium_pct: round(prem, 0), mcap_b: round(mcap / 1e9, 1), nav_b: round(nav / 1e9, 1), holdings: parts.join(", "), state, note });
+      }
+    } catch (e) { /* skip */ }
+  }
+
   // ---- FinTwit KOL sentiment (Alva Platform Data, host zet, public read) ----
   const sentiRows = [];
   try {
@@ -533,6 +563,8 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     str("ref"), str("holdings"), num("funding_annual_pct"), num("funding_z"), num("oi_change_pct"), str("state"), str("note")]) });
   feed.def("sentiment", { rows: makeDoc("KOL Sentiment", "FinTwit curated-account stance per holding", [
     str("symbol"), num("bull_30d"), num("bear_30d"), num("lean"), str("state"), str("note")]) });
+  feed.def("mnav", { rows: makeDoc("Crypto-treasury mNAV", "Market cap vs on-balance-sheet crypto NAV", [
+    str("symbol"), num("mnav"), num("premium_pct"), num("mcap_b"), num("nav_b"), str("holdings"), str("state"), str("note")]) });
   feed.def("notify", { message: makeDoc("Push", "Quiet-by-default alert body", [str("title"), str("body")]) });
 
   let pushedFlag = false, body = "<|SKIP_NOTIFICATION|>";
@@ -572,6 +604,7 @@ const pTwoSided = (z) => 2 * (1 - Phi(Math.abs(z)));
     if (optRows.length) await ctx.self.ts("options", "rows").append(optRows);
     if (cryptoRows.length) await ctx.self.ts("crypto", "rows").append(cryptoRows);
     if (sentiRows.length) await ctx.self.ts("sentiment", "rows").append(sentiRows);
+    if (mnavRows.length) await ctx.self.ts("mnav", "rows").append(mnavRows);
     if (signals.length) await ctx.self.ts("signals", "items").append(signals);
     // notify uses processing time (monotonic) so the platform fanout dispatches
     // even when the demo asof points at a historical session; signals/holdings keep asof.

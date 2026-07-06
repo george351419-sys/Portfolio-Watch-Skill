@@ -215,7 +215,7 @@
       var USER = "george351419";
       var FEED = "/alva/home/" + USER + "/feeds/pw-watch/v1/data/";
       var TH = { surface: 2.0, push: 2.5, force: 3.5 };
-      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [], smartmoney: [], optionsBySym: {}, cryptoByHolding: {}, sentimentBySym: {} };
+      var STATE = { overview: null, holdings: [], signalsBySym: {}, universe: {}, monitored: [], macro: [], smartmoney: [], optionsBySym: {}, cryptoByHolding: {}, sentimentBySym: {}, mnavBySym: {} };
 
       function cfg() { var p = new URLSearchParams(location.search); var t = window.alva && window.alva.udf && window.alva.udf.getViewerToken ? window.alva.udf.getViewerToken() : null; var o = p.get("api_origin"); var c = {}; if (t) c.pbsvToken = t; if (o) c.baseUrl = o.replace(/\/$/, ""); return c; }
       function client() { return new AlvaToolkit.AlvaClient(cfg()); }
@@ -291,6 +291,11 @@
         var flag = c.state !== "normal" ? ' <span class="chip-thesis ts-strained">' + esc(c.state) + "</span>" : "";
         return '<div class="hld-meta" style="margin-top:4px"><span>' + esc(c.ref) + " perp: funding " + c.funding_annual_pct + "%/yr · OI " + (c.oi_change_pct >= 0 ? "+" : "") + c.oi_change_pct + "%</span>" + flag + "</div>";
       }
+      function mnavLine(sym) {
+        var x = STATE.mnavBySym[sym]; if (!x) return "";
+        var cl = x.state === "discount" ? "ts-intact" : x.state === "premium" ? "ts-strained" : "";
+        return '<div class="hld-meta" style="margin-top:4px"><span>mNAV ' + x.mnav + " (" + (x.premium_pct >= 0 ? "+" : "") + x.premium_pct + "% vs " + x.holdings + " NAV)</span>" + (cl ? ' <span class="chip-thesis ' + cl + '">' + esc(x.state) + "</span>" : "") + "</div>";
+      }
       function sentiLine(sym) {
         var x = STATE.sentimentBySym[sym]; if (!x || x.state === "mixed") return "";
         var cl = x.state === "KOL-bullish" ? "ts-intact" : "ts-BROKEN";
@@ -308,7 +313,7 @@
           var badge = tier && tier !== "—" ? '<span class="badge t-' + (isT ? "THESIS" : tier) + '">' + (isT ? "THESIS" : tier) + "</span>" : "";
           var tags = ""; if (h.near_52w_high) tags += '<span class="tag52">52w high</span>'; if (h.near_52w_low) tags += '<span class="tag52">52w low</span>';
           var chip = h.thesis_label ? '<div><span class="chip-thesis ts-' + esc(h.thesis_state) + '">Thesis: ' + esc(h.thesis_label) + " · " + esc(h.thesis_state) + (h.thesis_corr != null ? " · ρ" + h.thesis_corr : "") + "</span></div>" : "";
-          return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + sentiLine(h.symbol) + optLine(h.symbol) + cryptoLine(h.symbol) + "</div>";
+          return '<div class="card"><div class="hld-top"><span class="hld-sym">' + esc(h.symbol) + "</span>" + badge + '<span class="hld-price muted">$' + Number(h.price).toFixed(2) + '</span></div><div class="hld-name">' + esc(h.name) + '</div><div class="hld-ret ' + cls(h.ret_pct) + '">' + pct(h.ret_pct) + " <span style='font-size:12px' class='muted'>" + Number(h.z).toFixed(1) + "σ</span></div>" + sbar(h.z) + '<div class="hld-meta"><span>RVOL ' + (h.rvol == null ? "—" : Number(h.rvol).toFixed(1) + "×") + "</span><span>β " + h.beta + "</span><span>w " + Math.round(h.weight * 100) + "%</span><span>dd " + pct(h.dd_from_high_pct) + "</span></div>" + (tags ? '<div style="margin-top:6px">' + tags + "</div>" : "") + chip + mnavLine(h.symbol) + sentiLine(h.symbol) + optLine(h.symbol) + cryptoLine(h.symbol) + "</div>";
         }).join("");
       }
       function renderMacro() {
@@ -427,6 +432,7 @@
           try { flat(await readJson(FEED + "options/rows/@last/12")).forEach(function (o) { STATE.optionsBySym[o.symbol] = o; }); } catch (e) {}
           try { flat(await readJson(FEED + "crypto/rows/@last/6")).forEach(function (c) { String(c.holdings || "").split(", ").forEach(function (h) { STATE.cryptoByHolding[h] = c; }); }); } catch (e) {}
           try { flat(await readJson(FEED + "sentiment/rows/@last/10")).forEach(function (x) { STATE.sentimentBySym[x.symbol] = x; }); } catch (e) {}
+          try { flat(await readJson(FEED + "mnav/rows/@last/6")).forEach(function (x) { STATE.mnavBySym[x.symbol] = x; }); } catch (e) {}
           renderOverview(STATE.overview); syncLabels(); wireControls();
           renderSignals(); renderMacro(); renderSmartMoney(); renderLens(); renderFormulas(); renderMonChips(); renderSearch("");
           if (!udfReady()) setNote("Sign in to Alva to add or remove monitored tickers.", true);
