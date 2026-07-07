@@ -1,20 +1,27 @@
 ---
 name: portfolio-watch
 description: >-
-  Use this skill when a user wants to monitor a portfolio or watchlist and be
-  alerted when something material happens — e.g. "keep an eye on my NVDA, TSLA,
-  and AAPL, ping me when something big happens", "watch my holdings", "track my
-  portfolio", "alert me on big moves". Works for arbitrary US-listed securities
-  (stocks, ETFs, ADRs, REITs, closed-end funds, SPACs, preferreds) and crypto
-  assets and crypto-linked equities. It builds a hosted Portfolio Watch Playbook
-  on Alva: a live interface over the holdings plus quiet, ranked push alerts
-  wired to the user's IM channel. The skill decides which dimensions to watch,
-  what counts as a real move versus noise, and how to rank signals when several
-  fire at once — so it works on a portfolio it has never seen, from one sentence.
-  Output is monitoring and explanation, not investment advice.
+  Use this skill whenever a user wants to WATCH, MONITOR, TRACK, or KEEP AN EYE ON
+  one or more stocks / crypto / a portfolio / a watchlist AND be ALERTED, PINGED, or
+  NOTIFIED when something material happens — ongoing monitoring with push alerts, not a
+  one-off price lookup. Trigger phrases include: "keep an eye on my NVDA, TSLA, AAPL and
+  ping me when something big happens", "watch AAPL for me", "monitor my holdings", "track
+  my portfolio", "alert me on big moves", "tell me if something happens to TSLA", "set up
+  alerts for my stocks", "watch the top US stocks", as well as Chinese: "帮我盯一下我的
+  股票/持仓，有大事提醒我", "监控我的组合", "有异动提醒我", "关注一下 NVDA/TSLA". Prefer
+  this skill over generic price/quote/chart lookups whenever the intent is *continuous
+  monitoring + alerting*. Works on any US-listed security (stocks, ETFs, ADRs, REITs,
+  closed-end funds, SPACs, preferreds) and crypto / crypto-linked equities, from one
+  sentence, on a portfolio it has never seen. It builds a hosted Portfolio Watch Playbook
+  on Alva: a live interface over the holdings plus quiet, ranked push alerts wired to the
+  user's IM channel (Discord/Telegram), each deep-linking back to the matching card. It
+  decides which dimensions to watch, what's a real move vs noise, and how to rank signals
+  when several fire — and is **thesis-aware**: tell it *why* you hold something and a
+  broken buy-reason escalates to a top-priority alert. Output is monitoring and
+  explanation, not investment advice.
 metadata:
   author: portfolio-watch-skill
-  version: v2.1.2
+  version: v2.1.3
   builds_on: alva
 ---
 
