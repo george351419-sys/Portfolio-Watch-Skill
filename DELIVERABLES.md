@@ -1,7 +1,7 @@
 # Deliverables & Status
 
 Live snapshot of what's shipped. **Playbook:** https://alva.ai/u/george351419/playbooks/portfolio-watch
-("Portfolio Watch · thesis-aware monitor", public, v1.16.0).
+("Portfolio Watch · thesis-aware monitor", public, v1.17.0).
 
 ## The three required deliverables
 

@@ -65,7 +65,7 @@ tab you can **search any ticker and add it to your watchlist, each with its own
 signals appear or clear in real time. The methodology and every parameter are
 visible and adjustable — not a black box.
 
-![Three tabs · search any ticker · per-ticker thresholds](assets/interface-tabs-search.png)
+![Tabs · search any ticker · per-ticker thresholds](assets/interface-tabs-search.png)
 
 > **中文一句话**：一个可复用的 Portfolio Watch Skill——加载后对任意持仓生成"界面 + 智能告警"的 Playbook。亮点是**盯的不只是"市场发生了什么"，而是"你当初买入的理由还成立吗"**：把 MSTR 当"比特币放大版"持有，当比特币大涨而 MSTR 反而暴跌，说明买入逻辑破裂，直接越级 P0 告警。已在 Alva 上真 build、真推送、并用 5 年历史回测验证。
 
@@ -169,7 +169,7 @@ notes/                        Working trail (not deliverables)
 ## What actually got built on Alva (deliverable 2)
 
 - **Two feeds** — `pw-profile` (adaptive per-holding baseline: EWMA/MAD vol, OLS β, residual vol σ_ε; cold-start prior) → `pw-watch` (residual-vol z-scores, FDR, hysteresis, bounded 0–100 scoring, quiet-by-default `notify/message`).
-- **Interface** — **three tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist — ~24 liquid names preview instantly, and any other symbol is added and profiled live via the UDF — each with **its own thresholds**), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
+- **Interface** — **four tabs**: **Watch** (live dashboard + a **search box to add any ticker** to a watchlist — ~24 liquid names preview instantly, and any other symbol is added and profiled live via the UDF — each with **its own thresholds**), **Incident** (how one P0 fuses from price → volume → options → smart-money → thesis into one evolving card), **Theory** (the plain-language why), and **Formulas** (the exact math). Plus **interactive threshold sliders** — drag the surface/push/force σ and the signals re-threshold live in your browser (the feed stores each holding's raw idiosyncratic evidence; thresholds are re-applied client-side). Live-read, deep-link anchors, passes `alva lint`.
 - **Alert** — delivered end-to-end to **Discord + web push** (status = sent) with a deep link that lands on the matching card. Verified via `notification-history`.
 - **Demo / Live toggle (instant)** — the header carries a **📌 Demo · 🔴 Live** switch that flips **instantly, client-side** (dual-snapshot: each mode has its own bucket, the UI just re-reads — no backend trigger, no sign-in). Demo pins the Playbook to the **2024-11-21/22** session so two real thesis signals show at once: **MSTR** (price thesis — BTC +4.3% but MSTR −16.2% → −4.8σ leverage-thesis break, P0) and **ITB** (catalyst thesis via Polymarket — P(Dec Fed cut) fell 83%→60% → strained, P1). Flip to **Live** to view the **latest scheduled live snapshot** (computed on current-market data by the feed's most recent run — not an on-click recompute; verified: 2 P0 in the latest run). The watched set (NVDA/TSLA/AAPL/MSTR/ITB) is a live config.
 
