@@ -14,7 +14,7 @@ description: >-
   Output is monitoring and explanation, not investment advice.
 metadata:
   author: portfolio-watch-skill
-  version: v2.1.1
+  version: v2.1.2
   builds_on: alva
 ---
 
@@ -60,6 +60,32 @@ for portfolio-level math (weights, drawdown, correlation, contribution),
 `references/push-notifications.md`. Never hardcode financial values into HTML.
 
 ---
+
+## Step 0 — Onboarding & Preflight (run this first, from one line)
+
+A user often invokes this skill from a **fresh local agent** with nothing set up, and
+says one line — *"watch my NVDA, TSLA, AAPL and ping me on big moves."* From that line,
+**proactively drive the entire setup and build** — don't make them configure things by
+hand, and don't ask for specs you can default. Before building, silently check three
+prerequisites and guide the user **only** where something is missing:
+
+1. **Base Alva skill available?** This skill declares `builds_on: alva` and needs Alva's
+   platform primitives (feeds, playbook release, push). If the agent can't reach the
+   Alva build tools, tell the user to install them once, then retry:
+   `npx skills add https://github.com/alva-ai/skills`.
+2. **Signed in to Alva?** The Playbook is created **under the user's own account** and
+   alerts are delivered to *them*, so they must be authenticated (`alva whoami` to check;
+   `alva auth login` if not). Guide the one-time login if needed.
+3. **Alert channel connected?** For pushes to reach the phone the user needs an
+   `active_channel` (Discord / Telegram / Slack) linked at **alva.ai/settings**. Check
+   `alva whoami` (`active_channel`); if none, note it now but **don't block the build** —
+   remind again right after the first alert is ready.
+
+Then **just build it**: parse the one line (Step 1), stand up the profile + watch feeds
+and the interface, and wire alerts to the user (see The Alerts → *Deliver to this user*).
+Report back in one line: *"Watching NVDA/TSLA/AAPL · interface: &lt;link&gt; · alerts →
+your &lt;channel&gt;."* Ask **at most one** blocking question, and only if truly ambiguous.
+Default everything else (equal weight, Standard sensitivity, long-horizon).
 
 ## Step 1 — Intake (works on an unseen portfolio)
 
@@ -510,6 +536,20 @@ init/resize in `requestAnimationFrame`.
 
 ## The Alerts
 
+**Deliver to *this* user (subscribe + channel + verify).** Emitting a `notify/message`
+record is not enough — the user must actually receive it on their phone:
+- After release, **subscribe the user to the Playbook's alerts** so `feed_alert_ready`
+  fans out to their `active_channel` (`alva subscriptions subscribe-playbook --username
+  <user> --name <playbook>`).
+- **Confirm a channel is connected.** If `alva whoami` shows no `active_channel`, guide
+  the user to link one at **alva.ai/settings** (Discord / Telegram / Slack) — the very
+  same pipeline regardless of app, no code change. Telegram's editable single-card
+  *silent update* additionally needs a BYOD bot token (Secret Manager); without it,
+  delivery degrades gracefully to one coalesced card per episode.
+- **Verify end-to-end, don't assume.** Trigger one run and confirm delivery via
+  `alva notification-history`; the loop the assignment asks for — *push on the phone →
+  tap → the matching card in the interface* — must be demonstrated, not claimed.
+
 - Sidecar: **`notify/message`** (proactive alerts, not trading targets).
 - **Quiet by default** — emit `<|SKIP_NOTIFICATION|>` on any tick with no P0/P1;
   a watch feed that pings every run trains the user to mute it.
@@ -648,6 +688,12 @@ then equal-weight impact, and prompt the user to add weights.
   data), Incident, Theory, Formulas; missing/stale data labeled; screenshot verifies.
   A Watch-only build is incomplete.
 - Every alert body carries a working `#sig-<id>` deep link.
+- **Preflight handled (Step 0):** base `alva` skill reachable (else the user was told to
+  `npx skills add …`), user signed in, and an `active_channel` connected — or the user
+  was explicitly guided to link one at alva.ai/settings.
+- **Delivery wired to the user:** the user is subscribed to the Playbook's alerts, and a
+  real push was **confirmed delivered** (`alva notification-history`, status `sent`) —
+  push → tap → matching card demonstrated, not assumed.
 - Alert enabled; a real run wrote a fresh sidecar record (or a correct
   `<|SKIP_NOTIFICATION|>` on a quiet tick).
 - Told the user, in their words: what it watches, when it will ping, what the next
