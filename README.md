@@ -7,7 +7,7 @@ Playbook with a live interface and quiet, ranked alerts — it decides which
 dimensions to watch, what's a real move vs noise, and how to rank signals, so it
 works on a portfolio it has never seen.
 
-> ⬇️ **Download & install:** grab [**`portfolio-watch-skill-v2.1.3.zip`** from the latest release](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest), unzip, and paste `SKILL.md` into Alva's Agent (it declares `builds_on: alva`). Then say *"watch my portfolio"*. Full steps in the release notes.
+> ⬇️ **Download & install:** grab [**`portfolio-watch-skill-v2.1.4.zip`** from the latest release](https://github.com/george351419-sys/Portfolio-Watch-Skill/releases/latest), unzip, and paste `SKILL.md` into Alva's Agent (it declares `builds_on: alva`). Then say *"watch my portfolio"*. Full steps in the release notes.
 
 > 📋 **See [`DELIVERABLES.md`](DELIVERABLES.md)** for a one-glance status of everything shipped (3 required deliverables · 10 signal sources · live state · gaps).
 >
@@ -125,7 +125,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 | # | Deliverable | Where |
 |---|---|---|
-| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) · packaged [`portfolio-watch-skill-v2.1.3.zip`](portfolio-watch-skill-v2.1.3.zip) |
+| 1 | **The Skill** (single file + code) | [`portfolio-watch/`](portfolio-watch/) · packaged [`portfolio-watch-skill-v2.1.4.zip`](portfolio-watch-skill-v2.1.4.zip) |
 | 2 | **A Playbook built from it** (interface + alerts live) | https://alva.ai/u/george351419/playbooks/portfolio-watch |
 | 3 | **One-pager** on the thinking (bilingual + figures) | [`One-Pager.md`](One-Pager.md) |
 
@@ -143,7 +143,7 @@ The same highlights are readable in-product on the Playbook's **Theory** tab, wi
 
 ```
 AGENTS.md                     Guide for AI agents & maintainers (architecture, gotchas, how to extend)
-portfolio-watch-skill-v2.1.3.zip   Deliverable 1 — the packaged, self-contained Skill bundle
+portfolio-watch-skill-v2.1.4.zip   Deliverable 1 — the packaged, self-contained Skill bundle
 portfolio-watch/              Deliverable 1 (unzipped) — SKILL.md + README + scripts/{live,modules}
 portfolio-watch/SKILL.md      the Skill (single, pasteable file)
 One-Pager.md                  Deliverable 3 — one-pager (bilingual, embeds assets/fig1-3)

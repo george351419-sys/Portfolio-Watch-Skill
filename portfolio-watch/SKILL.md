@@ -21,7 +21,7 @@ description: >-
   explanation, not investment advice.
 metadata:
   author: portfolio-watch-skill
-  version: v2.1.3
+  version: v2.1.4
   builds_on: alva
 ---
 
@@ -517,6 +517,18 @@ Theory and Formulas are **static explanatory content authored from this spec** �
 don't read the feed, so include them even on a minimal build. (A rebuild that ships
 only the Watch dashboard is incomplete: it loses the transparency that differentiates
 this product.)
+
+> **Reuse the shipped reference interface — do not re-author these tabs from scratch.**
+> A complete, lint-passing reference interface is bundled with this skill at
+> **`scripts/live/pw-index.html`** (also at `playbook-src/pw-index.html` in the repo).
+> The **Theory, Incident, and Formulas tabs are portfolio-independent static content**
+> — lift them **verbatim** from that file; hand-rewriting them is what produces the thin,
+> low-fidelity Theory/Formulas an agent tends to generate. Only the **Watch** tab needs
+> adapting to the new build: repoint `USER`/`FEED` paths and the watched set to the new
+> feeds, and (if not using the demo pin) drop the Demo/Live buckets. In other words:
+> **adapt the reference, don't reinvent it.** If the agent cannot read the bundled file,
+> at minimum reproduce the Theory sections ⓪–⑥ (reading-the-numbers, sources, layered
+> model, three-check gate, noise filters, ranking, thesis) and the full formula set.
 
 The **Watch** tab holds five content views, top-down by what the user cares about most:
 
